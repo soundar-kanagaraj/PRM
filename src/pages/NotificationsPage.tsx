@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, Check, CheckCheck, Info, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react'
+import { Bell, Check, CheckCheck, Info, TriangleAlert as AlertTriangle, CircleAlert as AlertCircle, CircleCheck as CheckCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Notification } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -12,7 +12,7 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   info: Info, warning: AlertTriangle, error: AlertCircle, success: CheckCircle,
 }
 const TYPE_COLORS: Record<string, string> = {
-  info: 'text-blue-500', warning: 'text-amber-500', error: 'text-red-500', success: 'text-emerald-500',
+  info: 'text-blue-500', warning: 'text-orange-500', error: 'text-red-500', success: 'text-green-500',
 }
 
 export default function NotificationsPage() {

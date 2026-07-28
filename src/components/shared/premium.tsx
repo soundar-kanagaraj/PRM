@@ -74,12 +74,12 @@ export function StatCard({ title, value, icon: Icon, format, trend, sparkData, c
   delay?: number
 }) {
   const palette = {
-    primary:     { from: 'from-indigo-500/12', to: 'to-indigo-500/4', icon: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400', spark: 'var(--chart-1)', glow: 'oklch(0.516 0.231 265 / 0.2)' },
-    secondary:   { from: 'from-violet-500/12', to: 'to-violet-500/4', icon: 'bg-violet-500/10 text-violet-600 dark:text-violet-400', spark: 'var(--chart-3)', glow: 'oklch(0.454 0.244 292 / 0.2)' },
-    accent:      { from: 'from-cyan-500/12',   to: 'to-cyan-500/4',   icon: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',       spark: 'var(--chart-5)', glow: 'oklch(0.710 0.143 210 / 0.2)' },
-    success:     { from: 'from-green-500/12',  to: 'to-green-500/4',  icon: 'bg-green-500/10 text-green-600 dark:text-green-400',    spark: 'var(--chart-2)', glow: 'oklch(0.698 0.173 151 / 0.2)' },
-    warning:     { from: 'from-amber-500/12',  to: 'to-amber-500/4',  icon: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',    spark: 'var(--chart-4)', glow: 'oklch(0.779 0.167 71 / 0.2)' },
-    destructive: { from: 'from-red-500/12',    to: 'to-red-500/4',    icon: 'bg-red-500/10 text-red-600 dark:text-red-400',          spark: 'var(--chart-5)', glow: 'oklch(0.620 0.218 24 / 0.2)' },
+    primary:     { from: 'from-blue-500/12',   to: 'to-blue-500/4',   icon: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',       spark: 'var(--chart-1)', glow: 'oklch(0.546 0.215 259 / 0.2)' },
+    secondary:   { from: 'from-teal-500/12',   to: 'to-teal-500/4',   icon: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',       spark: 'var(--chart-3)', glow: 'oklch(0.600 0.136 200 / 0.2)' },
+    accent:      { from: 'from-orange-500/12', to: 'to-orange-500/4', icon: 'bg-orange-500/10 text-orange-600 dark:text-orange-400', spark: 'var(--chart-4)', glow: 'oklch(0.705 0.176 49 / 0.2)' },
+    success:     { from: 'from-green-500/12',  to: 'to-green-500/4',  icon: 'bg-green-500/10 text-green-600 dark:text-green-400',  spark: 'var(--chart-2)', glow: 'oklch(0.627 0.170 150 / 0.2)' },
+    warning:     { from: 'from-yellow-500/12', to: 'to-yellow-500/4', icon: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400', spark: 'var(--chart-5)', glow: 'oklch(0.795 0.176 86 / 0.2)' },
+    destructive: { from: 'from-red-500/12',    to: 'to-red-500/4',   icon: 'bg-red-500/10 text-red-600 dark:text-red-400',          spark: 'var(--chart-4)', glow: 'oklch(0.577 0.217 27 / 0.2)' },
   }
   const p = palette[color]
   const hasTrend = trend !== undefined
@@ -167,7 +167,7 @@ export function PageHeader({ title, description, children, section }: {
         >
           {title}
         </h1>
-        {description && <p className="text-sm text-muted-foreground mt-0.5" style={{ fontFamily: 'var(--font-body)' }}>{description}</p>}
+        {description && <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: 'var(--font-body)' }}>{description}</p>}
       </div>
       {children && <div className="flex items-center gap-2 shrink-0">{children}</div>}
     </motion.div>
@@ -183,14 +183,14 @@ export function StatusBadge({ status, variant }: {
     active:   'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/25',
     success:  'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/25',
     inactive: 'bg-slate-400/10 text-slate-600 dark:text-slate-400 border-slate-400/25',
-    pending:  'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25',
-    warning:  'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25',
+    pending:  'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/25',
+    warning:  'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/25',
     danger:   'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/25',
-    info:     'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/25',
+    info:     'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/25',
   }
   const dots = {
     active: 'bg-green-500', success: 'bg-green-500', inactive: 'bg-slate-400',
-    pending: 'bg-amber-500', warning: 'bg-amber-500', danger: 'bg-red-500', info: 'bg-indigo-500',
+    pending: 'bg-yellow-500', warning: 'bg-orange-500', danger: 'bg-red-500', info: 'bg-blue-500',
   }
   const v = variant ?? 'info'
   return (

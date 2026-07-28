@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, CheckSquare, Trash2, Edit, Check, AlertCircle } from 'lucide-react'
+import { Plus, SquareCheck as CheckSquare, Trash2, CreditCard as Edit, Check, CircleAlert as AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { Task, Partner } from '@/lib/supabase'
@@ -33,8 +33,10 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: 'bg-gray-100 text-gray-600', medium: 'bg-blue-100 text-blue-700',
-  high: 'bg-amber-100 text-amber-700', urgent: 'bg-red-100 text-red-700',
+  low: 'bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400',
+  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  urgent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 }
 
 export default function TasksPage() {

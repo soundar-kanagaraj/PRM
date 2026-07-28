@@ -1,10 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Building2, LayoutDashboard, FileText, TrendingUp,
-  DollarSign, CheckSquare, Bell, Settings, LogOut, ChevronDown,
-  BookOpen, Activity, BarChart3, FileStack, UserCog, Moon, Sun, Search,
-} from 'lucide-react'
+import { Building2, LayoutDashboard, FileText, TrendingUp, DollarSign, SquareCheck as CheckSquare, Bell, Settings, LogOut, ChevronDown, BookOpen, Activity, ChartBar as BarChart3, FileStack, UserCog, Moon, Sun, Search } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/components/theme-provider'
 import { toast } from 'sonner'
@@ -113,7 +109,7 @@ function AppSidebar() {
                             transition={{ duration: 0.2 }}
                             style={{
                               background: active
-                                ? 'linear-gradient(135deg, oklch(0.516 0.231 265 / 0.12), oklch(0.454 0.244 292 / 0.04))'
+                                ? 'linear-gradient(135deg, oklch(0.546 0.215 259 / 0.12), oklch(0.600 0.136 200 / 0.04))'
                                 : 'transparent',
                             }}
                           />
@@ -159,7 +155,7 @@ function AppSidebar() {
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="rounded-xl relative overflow-hidden group h-10">
                         <Link to={item.href}>
-                          <span className="absolute inset-0 rounded-xl" style={{ background: active ? 'linear-gradient(135deg, oklch(0.516 0.231 265 / 0.12), transparent)' : 'transparent' }} />
+                          <span className="absolute inset-0 rounded-xl" style={{ background: active ? 'linear-gradient(135deg, oklch(0.546 0.215 259 / 0.12), transparent)' : 'transparent' }} />
                           <motion.span whileHover={{ scale: 1.15 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
                             <item.icon className={cn('size-4 relative z-10', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/55 group-hover:text-sidebar-foreground')} />
                           </motion.span>
