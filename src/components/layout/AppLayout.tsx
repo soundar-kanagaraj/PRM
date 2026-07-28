@@ -1,0 +1,338 @@
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Building2, LayoutDashboard, FileText, TrendingUp,
+  DollarSign, CheckSquare, Bell, Settings, LogOut, ChevronDown,
+  BookOpen, Activity, BarChart3, FileStack, UserCog, Moon, Sun, Search,
+} from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/components/theme-provider'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import {
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
+  SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton,
+  SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarRail,
+} from '@/components/ui/sidebar'
+import { Kbd } from '@/components/ui/kbd'
+
+const navGroups = [
+  { label: 'Overview', items: [{ title: 'Dashboard', href: '/', icon: LayoutDashboard }] },
+  {
+    label: 'Partnership',
+    items: [
+      { title: 'Partners', href: '/partners', icon: Building2 },
+      { title: 'Agreements', href: '/agreements', icon: FileText },
+      { title: 'Opportunities', href: '/opportunities', icon: TrendingUp },
+      { title: 'Revenue', href: '/revenue', icon: DollarSign },
+    ],
+  },
+  {
+    label: 'Operations',
+    items: [
+      { title: 'Tasks', href: '/tasks', icon: CheckSquare },
+      { title: 'Documents', href: '/documents', icon: FileStack },
+      { title: 'Playbook', href: '/playbook', icon: BookOpen },
+    ],
+  },
+  {
+    label: 'Insights',
+    items: [
+      { title: 'Reports', href: '/reports', icon: BarChart3 },
+      { title: 'Activities', href: '/activities', icon: Activity },
+    ],
+  },
+]
+
+function AppSidebar() {
+  const location = useLocation()
+  const { profile, isAdmin } = useAuth()
+
+  const isActive = (href: string) =>
+    href === '/' ? location.pathname === '/' : location.pathname.startsWith(href)
+
+  return (
+    <Sidebar
+      collapsible="icon"
+      className="glass-sidebar !m-3 !rounded-2xl !h-[calc(100vh-1.5rem)] !border"
+      style={{ '--sidebar-width': '16rem', '--sidebar-width-icon': '4rem' } as React.CSSProperties}
+    >
+      <SidebarHeader className="px-4 py-5">
+        <Link to="/" className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            className="flex items-center justify-center size-10 rounded-xl btn-gradient shrink-0 shadow-lg"
+          >
+            <Building2 className="size-5 text-white" />
+          </motion.div>
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <span
+              className="font-bold text-sm leading-tight text-sidebar-foreground"
+              style={{ fontFamily: 'var(--font-section)' }}
+            >
+              PartnerHub
+            </span>
+            <span className="text-[10px] text-sidebar-foreground/50 leading-tight">PRM Platform</span>
+          </div>
+        </Link>
+      </SidebarHeader>
+
+      <SidebarContent className="px-2 scrollbar-premium">
+        {navGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className="text-[10px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.15em] px-3 py-2">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const active = isActive(item.href)
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        tooltip={item.title}
+                        className="rounded-xl relative overflow-hidden group h-10"
+                      >
+                        <Link to={item.href}>
+                          {/* Active background */}
+                          <motion.span
+                            className="absolute inset-0 rounded-xl"
+                            initial={false}
+                            animate={active ? { opacity: 1 } : { opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            style={{
+                              background: active
+                                ? 'linear-gradient(135deg, oklch(0.516 0.231 265 / 0.12), oklch(0.454 0.244 292 / 0.04))'
+                                : 'transparent',
+                            }}
+                          />
+                          <motion.span
+                            whileHover={{ scale: 1.15 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                          >
+                            <item.icon className={cn('size-4 relative z-10 transition-colors', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/55 group-hover:text-sidebar-foreground')} />
+                          </motion.span>
+                          <span className={cn('relative z-10 text-sm', active ? 'font-semibold text-sidebar-foreground' : 'font-medium text-sidebar-foreground/70 group-hover:text-sidebar-foreground')}>
+                            {item.title}
+                          </span>
+                          {active && (
+                            <motion.div
+                              layoutId="sidebar-active-indicator"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full btn-gradient"
+                              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                            />
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-[10px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.15em] px-3 py-2">
+              Administration
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {[
+                  { title: 'Users', href: '/users', icon: UserCog },
+                  { title: 'Settings', href: '/settings', icon: Settings },
+                ].map((item) => {
+                  const active = isActive(item.href)
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="rounded-xl relative overflow-hidden group h-10">
+                        <Link to={item.href}>
+                          <span className="absolute inset-0 rounded-xl" style={{ background: active ? 'linear-gradient(135deg, oklch(0.516 0.231 265 / 0.12), transparent)' : 'transparent' }} />
+                          <motion.span whileHover={{ scale: 1.15 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
+                            <item.icon className={cn('size-4 relative z-10', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/55 group-hover:text-sidebar-foreground')} />
+                          </motion.span>
+                          <span className={cn('relative z-10 text-sm', active ? 'font-semibold' : 'font-medium text-sidebar-foreground/70')}>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </SidebarContent>
+
+      <SidebarFooter className="px-2 py-3">
+        <Link to="/profile" className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-sidebar-accent/50 transition-colors group-data-[collapsible=icon]:justify-center">
+          <Avatar className="size-8 shrink-0 ring-2 ring-sidebar-border/50">
+            <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
+              {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
+            <span className="text-xs font-semibold text-sidebar-foreground truncate">{profile?.full_name || 'User'}</span>
+            <span className="text-[10px] text-sidebar-foreground/50 truncate capitalize">{profile?.role?.replace('_', ' ')}</span>
+          </div>
+        </Link>
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  )
+}
+
+function TopBar() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { profile, signOut } = useAuth()
+  const { theme, setTheme } = useTheme()
+
+  const pageTitles: Record<string, string> = {
+    '/': 'Dashboard', '/partners': 'Partners', '/agreements': 'Agreements',
+    '/opportunities': 'Opportunities', '/revenue': 'Revenue', '/tasks': 'Tasks',
+    '/documents': 'Documents', '/playbook': 'Partnership Playbook', '/reports': 'Reports',
+    '/activities': 'Activity Log', '/notifications': 'Notifications', '/settings': 'Settings',
+    '/users': 'User Management', '/profile': 'My Profile',
+  }
+  const currentTitle = Object.entries(pageTitles).find(([path]) =>
+    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
+  )?.[1] ?? 'PartnerHub'
+
+  async function handleSignOut() {
+    await signOut()
+    toast.success('Signed out successfully')
+    navigate('/login')
+  }
+
+  return (
+    <header className="topbar-float h-14 flex items-center px-4 gap-3 sticky top-0 z-40">
+      <SidebarTrigger className="shrink-0 hover:bg-muted/50 rounded-lg" />
+      <Separator orientation="vertical" className="h-5 bg-border/50" />
+
+      <motion.h1
+        key={currentTitle}
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.25 }}
+        className="text-sm font-semibold hidden sm:block"
+        style={{ fontFamily: 'var(--font-section)' }}
+      >
+        {currentTitle}
+      </motion.h1>
+
+      <div className="flex-1" />
+
+      {/* Search */}
+      <button className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors text-sm text-muted-foreground border border-border/40">
+        <Search className="size-3.5" />
+        <span className="text-xs">Search...</span>
+        <Kbd className="text-[10px] px-1 py-0 ml-4">⌘K</Kbd>
+      </button>
+
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 rounded-lg hover:bg-muted/50"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={theme}
+              initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
+              animate={{ rotate: 0, opacity: 1, scale: 1 }}
+              exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </motion.div>
+          </AnimatePresence>
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 rounded-lg hover:bg-muted/50 relative"
+          onClick={() => navigate('/notifications')}
+        >
+          <Bell className="size-4" />
+          <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2 h-8 pl-1 pr-2 rounded-lg hover:bg-muted/50">
+              <Avatar className="size-7 ring-2 ring-border/50">
+                <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
+                  {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium hidden sm:block max-w-[120px] truncate">
+                {profile?.full_name || 'User'}
+              </span>
+              <ChevronDown className="size-3 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 rounded-xl glass">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col gap-1">
+                <p className="text-sm font-medium leading-none">{profile?.full_name || 'User'}</p>
+                <p className="text-xs leading-none text-muted-foreground capitalize">{profile?.role?.replace('_', ' ')}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate('/profile')}>
+              <UserCog className="size-4" /> My Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate('/notifications')}>
+              <Bell className="size-4" /> Notifications
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" className="rounded-lg cursor-pointer" onClick={handleSignOut}>
+              <LogOut className="size-4" /> Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
+  )
+}
+
+export default function AppLayout() {
+  const location = useLocation()
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex min-h-screen w-full gradient-mesh">
+        <AppSidebar />
+        <div className="flex flex-col flex-1 min-w-0">
+          <TopBar />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto scrollbar-premium">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  )
+}
