@@ -81,7 +81,7 @@ function AppSidebar() {
         {navGroups.map((group) => (
           <SidebarGroup key={group.label} className="py-1.5">
             <div className="px-3 pb-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/35">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/45">
                 {group.label}
               </span>
             </div>
@@ -129,7 +129,7 @@ function AppSidebar() {
         {isAdmin && (
           <SidebarGroup className="py-1.5">
             <div className="px-3 pb-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/35">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/45">
                 Admin
               </span>
             </div>

@@ -91,7 +91,7 @@ export default function ReportsPage() {
             <div className="px-6 pt-5 pb-3">
               <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Monthly Revenue ({currentYear})</h3>
             </div>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 px-6 pb-6">
               <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                 <BarChart data={monthlyRevenue}>
                   <CartesianGrid vertical={false} className="stroke-border" />
@@ -110,7 +110,7 @@ export default function ReportsPage() {
             <div className="px-6 pt-5 pb-3">
               <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Opportunity Pipeline</h3>
             </div>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 px-6 pb-6">
               <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                 <BarChart data={oppFunnel} layout="vertical">
                   <CartesianGrid horizontal={false} className="stroke-border" />
@@ -129,7 +129,7 @@ export default function ReportsPage() {
             <div className="px-6 pt-5 pb-3">
               <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Partner Status Distribution</h3>
             </div>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 px-6 pb-6">
               {statusDist.length === 0 ? <EmptyState icon={Users} title="No data" /> : (
                 <ChartContainer config={{}} className="min-h-[200px] w-full">
                   <PieChart>
@@ -149,7 +149,7 @@ export default function ReportsPage() {
             <div className="px-6 pt-5 pb-3">
               <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Agreement Status</h3>
             </div>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 px-6 pb-6">
               {aggStatusDist.length === 0 ? <EmptyState icon={FileText} title="No data" /> : (
                 <ChartContainer config={{}} className="min-h-[200px] w-full">
                   <PieChart>
