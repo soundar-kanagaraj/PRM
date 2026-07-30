@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Download, TrendingUp, Users, FileText, DollarSign } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Tooltip } from 'recharts'
@@ -88,8 +88,10 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <FadeIn>
           <GlassCard accent className="overflow-hidden">
-            <CardHeader><CardTitle className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>Monthly Revenue ({currentYear})</CardTitle></CardHeader>
-            <CardContent>
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Monthly Revenue ({currentYear})</h3>
+            </div>
+            <CardContent className="pt-0">
               <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                 <BarChart data={monthlyRevenue}>
                   <CartesianGrid vertical={false} className="stroke-border" />
@@ -105,8 +107,10 @@ export default function ReportsPage() {
 
         <FadeIn delay={0.06}>
           <GlassCard accent className="overflow-hidden">
-            <CardHeader><CardTitle className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>Opportunity Pipeline</CardTitle></CardHeader>
-            <CardContent>
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Opportunity Pipeline</h3>
+            </div>
+            <CardContent className="pt-0">
               <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                 <BarChart data={oppFunnel} layout="vertical">
                   <CartesianGrid horizontal={false} className="stroke-border" />
@@ -122,8 +126,10 @@ export default function ReportsPage() {
 
         <FadeIn delay={0.12}>
           <GlassCard accent className="overflow-hidden">
-            <CardHeader><CardTitle className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>Partner Status Distribution</CardTitle></CardHeader>
-            <CardContent>
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Partner Status Distribution</h3>
+            </div>
+            <CardContent className="pt-0">
               {statusDist.length === 0 ? <EmptyState icon={Users} title="No data" /> : (
                 <ChartContainer config={{}} className="min-h-[200px] w-full">
                   <PieChart>
@@ -140,8 +146,10 @@ export default function ReportsPage() {
 
         <FadeIn delay={0.18}>
           <GlassCard accent className="overflow-hidden">
-            <CardHeader><CardTitle className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>Agreement Status</CardTitle></CardHeader>
-            <CardContent>
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Agreement Status</h3>
+            </div>
+            <CardContent className="pt-0">
               {aggStatusDist.length === 0 ? <EmptyState icon={FileText} title="No data" /> : (
                 <ChartContainer config={{}} className="min-h-[200px] w-full">
                   <PieChart>
@@ -159,7 +167,10 @@ export default function ReportsPage() {
 
       <FadeIn delay={0.24}>
         <GlassCard accent className="overflow-hidden">
-          <CardHeader><CardTitle className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>Partner Revenue Ranking</CardTitle><CardDescription style={{ fontFamily: 'var(--font-body)' }}>Top partners by total revenue generated</CardDescription></CardHeader>
+          <div className="px-6 pt-5 pb-3">
+            <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Partner Revenue Ranking</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Top partners by total revenue generated</p>
+          </div>
           <CardContent className="p-0">
             <Table>
               <TableHeader>

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Building2, LayoutDashboard, FileText, TrendingUp, DollarSign,
+  LayoutDashboard, FileText, TrendingUp, DollarSign,
   SquareCheck as CheckSquare, Bell, Settings, LogOut, ChevronDown,
   BookOpen, Activity, ChartBar as BarChart3, FileStack, UserCog, Moon, Sun, Search,
 } from 'lucide-react'
@@ -19,17 +19,20 @@ import {
 import { Separator } from '@/components/ui/separator'
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
-  SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton,
+  SidebarHeader, SidebarMenu, SidebarMenuButton,
   SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarRail,
 } from '@/components/ui/sidebar'
 import { Kbd } from '@/components/ui/kbd'
 
 const navGroups = [
-  { label: 'Overview', items: [{ title: 'Dashboard', href: '/', icon: LayoutDashboard }] },
+  {
+    label: 'General',
+    items: [{ title: 'Dashboard', href: '/', icon: LayoutDashboard }],
+  },
   {
     label: 'Partnership',
     items: [
-      { title: 'Partners', href: '/partners', icon: Building2 },
+      { title: 'Partners', href: '/partners', icon: LayoutDashboard },
       { title: 'Agreements', href: '/agreements', icon: FileText },
       { title: 'Opportunities', href: '/opportunities', icon: TrendingUp },
       { title: 'Revenue', href: '/revenue', icon: DollarSign },
@@ -68,26 +71,20 @@ function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="px-4 py-4 border-b border-sidebar-border/50">
-        <Link to="/" className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <div className="flex items-center justify-center size-9 rounded-xl btn-gradient shrink-0 shadow-md">
-            <Building2 className="size-4 text-white" />
-          </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-bold text-sm leading-tight text-sidebar-foreground" style={{ fontFamily: 'var(--font-section)' }}>
-              PartnerHub
-            </span>
-            <span className="text-[10px] text-sidebar-foreground/50 leading-tight">PRM Platform</span>
-          </div>
+      <SidebarHeader className="px-5 py-5 border-b border-sidebar-border/50">
+        <Link to="/" className="flex items-center group-data-[collapsible=icon]:justify-center">
+          <span className="logo-text text-2xl leading-none">Linkit</span>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-2 scrollbar-premium">
+      <SidebarContent className="px-3 py-3 scrollbar-premium">
         {navGroups.map((group) => (
-          <SidebarGroup key={group.label} className="py-1">
-            <SidebarGroupLabel className="text-[9px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.18em] px-3 h-6">
-              {group.label}
-            </SidebarGroupLabel>
+          <SidebarGroup key={group.label} className="py-1.5">
+            <div className="px-3 pb-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/35">
+                {group.label}
+              </span>
+            </div>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
@@ -98,32 +95,27 @@ function AppSidebar() {
                         asChild
                         isActive={active}
                         tooltip={item.title}
-                        className="rounded-lg relative overflow-hidden group h-9"
+                        className="rounded-lg h-9 relative"
                       >
                         <Link to={item.href}>
                           {active && (
-                            <span
+                            <motion.div
+                              layoutId="sidebar-active"
                               className="absolute inset-0 rounded-lg"
-                              style={{ background: 'linear-gradient(135deg, oklch(0.546 0.215 259 / 0.15), oklch(0.600 0.136 200 / 0.05))' }}
+                              style={{ background: 'var(--sidebar-accent)' }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             />
                           )}
                           <item.icon className={cn(
                             'size-4 relative z-10 shrink-0 transition-colors',
-                            active ? 'text-sidebar-primary' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground'
+                            active ? 'text-sidebar-primary' : 'text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80'
                           )} />
                           <span className={cn(
-                            'relative z-10 text-sm',
-                            active ? 'font-semibold text-sidebar-foreground' : 'font-medium text-sidebar-foreground/70 group-hover:text-sidebar-foreground'
+                            'relative z-10 text-sm transition-colors',
+                            active ? 'font-semibold text-sidebar-primary' : 'font-medium text-sidebar-foreground/65 group-hover:text-sidebar-foreground'
                           )}>
                             {item.title}
                           </span>
-                          {active && (
-                            <motion.div
-                              layoutId="sidebar-active-indicator"
-                              className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r-full btn-gradient"
-                              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                            />
-                          )}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -135,23 +127,30 @@ function AppSidebar() {
         ))}
 
         {isAdmin && (
-          <SidebarGroup className="py-1">
-            <SidebarGroupLabel className="text-[9px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.18em] px-3 h-6">
-              Administration
-            </SidebarGroupLabel>
+          <SidebarGroup className="py-1.5">
+            <div className="px-3 pb-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/35">
+                Admin
+              </span>
+            </div>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => {
                   const active = isActive(item.href)
                   return (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="rounded-lg relative overflow-hidden group h-9">
+                      <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="rounded-lg h-9 relative">
                         <Link to={item.href}>
                           {active && (
-                            <span className="absolute inset-0 rounded-lg" style={{ background: 'linear-gradient(135deg, oklch(0.546 0.215 259 / 0.15), transparent)' }} />
+                            <motion.div
+                              layoutId="sidebar-active"
+                              className="absolute inset-0 rounded-lg"
+                              style={{ background: 'var(--sidebar-accent)' }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            />
                           )}
-                          <item.icon className={cn('size-4 relative z-10 shrink-0', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground')} />
-                          <span className={cn('relative z-10 text-sm', active ? 'font-semibold text-sidebar-foreground' : 'font-medium text-sidebar-foreground/70 group-hover:text-sidebar-foreground')}>
+                          <item.icon className={cn('size-4 relative z-10 shrink-0', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80')} />
+                          <span className={cn('relative z-10 text-sm', active ? 'font-semibold text-sidebar-primary' : 'font-medium text-sidebar-foreground/65 group-hover:text-sidebar-foreground')}>
                             {item.title}
                           </span>
                         </Link>
@@ -165,16 +164,16 @@ function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="px-2 py-3 border-t border-sidebar-border/50">
-        <Link to="/profile" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-sidebar-accent/40 transition-colors group-data-[collapsible=icon]:justify-center">
-          <Avatar className="size-8 shrink-0 ring-2 ring-sidebar-border/60">
+      <SidebarFooter className="px-3 py-3 border-t border-sidebar-border/50">
+        <Link to="/profile" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors group-data-[collapsible=icon]:justify-center">
+          <Avatar className="size-8 shrink-0 ring-2 ring-sidebar-border/40">
             <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
               {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="text-xs font-semibold text-sidebar-foreground truncate">{profile?.full_name || 'User'}</span>
-            <span className="text-[10px] text-sidebar-foreground/50 truncate capitalize">{profile?.role?.replace('_', ' ')}</span>
+            <span className="text-[10px] text-sidebar-foreground/45 truncate capitalize">{profile?.role?.replace('_', ' ')}</span>
           </div>
         </Link>
       </SidebarFooter>
@@ -276,7 +275,7 @@ function TopBar() {
   }
   const currentTitle = Object.entries(pageTitles).find(([path]) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
-  )?.[1] ?? 'PartnerHub'
+  )?.[1] ?? 'Linkit'
 
   async function handleSignOut() {
     await signOut()
@@ -294,17 +293,20 @@ function TopBar() {
 
   return (
     <>
-      <header className="h-14 flex items-center px-4 gap-3 sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-        <SidebarTrigger className="shrink-0 hover:bg-muted/60 rounded-lg size-8" />
-        <Separator orientation="vertical" className="h-5 bg-border/60" />
+      <header
+        className="h-14 flex items-center px-4 gap-3 sticky top-0 z-40 border-b border-sidebar-border/50"
+        style={{ background: 'var(--sidebar)' }}
+      >
+        <SidebarTrigger className="shrink-0 hover:bg-sidebar-accent/50 rounded-lg size-8" />
+        <Separator orientation="vertical" className="h-5 bg-sidebar-border/50" />
 
         <motion.h1
           key={currentTitle}
           initial={{ opacity: 0, x: -6 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.2 }}
-          className="text-sm font-semibold hidden sm:block text-foreground"
-          style={{ fontFamily: 'var(--font-section)' }}
+          className="text-sm font-semibold hidden sm:block text-sidebar-foreground"
+          style={{ fontFamily: 'var(--font-display)' }}
         >
           {currentTitle}
         </motion.h1>
@@ -313,7 +315,7 @@ function TopBar() {
 
         <button
           onClick={() => setSearchOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors text-muted-foreground border border-border/50 cursor-pointer"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sidebar-accent/30 hover:bg-sidebar-accent/50 transition-colors text-sidebar-foreground/50 border border-sidebar-border/40 cursor-pointer"
         >
           <Search className="size-3.5" />
           <span className="text-xs">Search...</span>
@@ -321,7 +323,7 @@ function TopBar() {
         </button>
 
         <div className="flex items-center gap-0.5">
-          <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-muted/60"
+          <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
             <AnimatePresence mode="wait">
@@ -336,7 +338,7 @@ function TopBar() {
             </AnimatePresence>
           </Button>
 
-          <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-muted/60 relative"
+          <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground relative"
             onClick={() => navigate('/notifications')}
           >
             <Bell className="size-4" />
@@ -345,8 +347,8 @@ function TopBar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-8 pl-1 pr-2 rounded-lg hover:bg-muted/60">
-                <Avatar className="size-7 ring-2 ring-border/50">
+              <Button variant="ghost" className="flex items-center gap-2 h-8 pl-1 pr-2 rounded-lg hover:bg-sidebar-accent/50 text-sidebar-foreground">
+                <Avatar className="size-7 ring-2 ring-sidebar-border/40">
                   <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
                     {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
                   </AvatarFallback>
@@ -354,7 +356,7 @@ function TopBar() {
                 <span className="text-sm font-medium hidden sm:block max-w-[120px] truncate">
                   {profile?.full_name || 'User'}
                 </span>
-                <ChevronDown className="size-3 text-muted-foreground" />
+                <ChevronDown className="size-3 text-sidebar-foreground/40" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-xl glass">

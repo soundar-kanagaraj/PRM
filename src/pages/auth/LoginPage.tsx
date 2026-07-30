@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Building2, Eye, EyeOff, Lock, Mail, User, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, User, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -75,16 +75,8 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-            className="flex items-center justify-center size-14 rounded-2xl btn-gradient shadow-xl mb-4"
-          >
-            <Building2 className="size-7 text-white" />
-          </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient" style={{ fontFamily: 'var(--font-display)' }}>PartnerHub PRM</h1>
-          <p className="text-sm text-muted-foreground mt-1">Enterprise Partnership Management</p>
+          <h1 className="logo-text text-4xl leading-none mb-1">Linkit</h1>
+          <p className="text-sm text-muted-foreground">Enterprise Partnership Management</p>
         </div>
 
         <Card className="glass rounded-2xl shadow-2xl border-border/30 overflow-hidden">

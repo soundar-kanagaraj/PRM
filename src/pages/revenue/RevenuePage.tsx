@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -109,8 +109,10 @@ export default function RevenuePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <FadeIn delay={0.1}>
           <GlassCard className="p-0">
-            <CardHeader className="p-6 pb-2"><CardTitle className="text-sm" style={{ fontFamily: 'var(--font-section)' }}>Monthly Revenue ({currentYear})</CardTitle></CardHeader>
-            <CardContent className="p-6">
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Monthly Revenue ({currentYear})</h3>
+            </div>
+            <CardContent className="pt-0 px-6 pb-6">
               <ChartContainer config={chartConfig} className="min-h-[180px] w-full">
                 <BarChart data={monthlyData}>
                   <CartesianGrid vertical={false} className="stroke-border" />
@@ -125,8 +127,10 @@ export default function RevenuePage() {
         </FadeIn>
         <FadeIn delay={0.15}>
           <GlassCard className="p-0">
-            <CardHeader className="p-6 pb-2"><CardTitle className="text-sm" style={{ fontFamily: 'var(--font-section)' }}>Revenue by Partner</CardTitle></CardHeader>
-            <CardContent className="p-6">
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Revenue by Partner</h3>
+            </div>
+            <CardContent className="pt-0 px-6 pb-6">
               {partnerRevData.length === 0 ? (
                 <div className="h-[180px] flex items-center justify-center">
                   <EmptyState icon={AlertCircle} title="No data" description="Revenue by partner will appear here once records exist." />

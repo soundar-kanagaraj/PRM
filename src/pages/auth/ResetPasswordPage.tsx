@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Building2, Lock } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -40,10 +40,8 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         <FadeIn>
           <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center justify-center size-14 rounded-xl bg-primary mb-4 shadow-lg">
-              <Building2 className="size-7 text-primary-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>PartnerHub PRM</h1>
+            <h1 className="logo-text text-4xl leading-none mb-1">Linkit</h1>
+            <p className="text-sm text-muted-foreground">Enterprise Partnership Management</p>
           </div>
         </FadeIn>
 

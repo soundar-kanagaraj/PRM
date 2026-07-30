@@ -74,12 +74,12 @@ export function StatCard({ title, value, icon: Icon, format, trend, sparkData, c
   delay?: number
 }) {
   const palette = {
-    primary:     { from: 'from-blue-500/12',   to: 'to-blue-500/4',   icon: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',       spark: 'var(--chart-1)', glow: 'oklch(0.546 0.215 259 / 0.2)' },
-    secondary:   { from: 'from-teal-500/12',   to: 'to-teal-500/4',   icon: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',       spark: 'var(--chart-3)', glow: 'oklch(0.600 0.136 200 / 0.2)' },
-    accent:      { from: 'from-orange-500/12', to: 'to-orange-500/4', icon: 'bg-orange-500/10 text-orange-600 dark:text-orange-400', spark: 'var(--chart-4)', glow: 'oklch(0.705 0.176 49 / 0.2)' },
-    success:     { from: 'from-green-500/12',  to: 'to-green-500/4',  icon: 'bg-green-500/10 text-green-600 dark:text-green-400',  spark: 'var(--chart-2)', glow: 'oklch(0.627 0.170 150 / 0.2)' },
-    warning:     { from: 'from-yellow-500/12', to: 'to-yellow-500/4', icon: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400', spark: 'var(--chart-5)', glow: 'oklch(0.795 0.176 86 / 0.2)' },
-    destructive: { from: 'from-red-500/12',    to: 'to-red-500/4',   icon: 'bg-red-500/10 text-red-600 dark:text-red-400',          spark: 'var(--chart-4)', glow: 'oklch(0.577 0.217 27 / 0.2)' },
+    primary:     { from: 'from-teal-500/12',    to: 'to-teal-500/4',   icon: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',       spark: 'var(--chart-1)', glow: 'oklch(0.510 0.133 194 / 0.2)' },
+    secondary:   { from: 'from-indigo-500/12',   to: 'to-indigo-500/4', icon: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400', spark: 'var(--chart-2)', glow: 'oklch(0.540 0.200 264 / 0.2)' },
+    accent:      { from: 'from-amber-500/12',   to: 'to-amber-500/4',  icon: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',   spark: 'var(--chart-3)', glow: 'oklch(0.705 0.176 49 / 0.2)' },
+    success:     { from: 'from-green-500/12',   to: 'to-green-500/4',  icon: 'bg-green-500/10 text-green-600 dark:text-green-400',   spark: 'var(--chart-4)', glow: 'oklch(0.627 0.170 150 / 0.2)' },
+    warning:     { from: 'from-yellow-500/12',  to: 'to-yellow-500/4', icon: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400', spark: 'var(--chart-5)', glow: 'oklch(0.795 0.176 86 / 0.2)' },
+    destructive: { from: 'from-red-500/12',     to: 'to-red-500/4',    icon: 'bg-red-500/10 text-red-600 dark:text-red-400',         spark: 'var(--chart-4)', glow: 'oklch(0.577 0.217 27 / 0.2)' },
   }
   const p = palette[color]
   const hasTrend = trend !== undefined
@@ -158,7 +158,7 @@ export function PageHeader({ title, description, children, section }: {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"
+      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
     >
       <div>
         <h1
