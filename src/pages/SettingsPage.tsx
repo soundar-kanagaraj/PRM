@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Settings, Plus, Trash2, Edit } from 'lucide-react'
+import { Settings, Plus, Trash2, CreditCard as Edit } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Setting } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -8,12 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Switch } from '@/components/ui/switch'
 import { PageHeader, EmptyState, PremiumSkeleton, FadeIn } from '@/components/shared/premium'
+import { cn } from '@/lib/utils'
 
 const SETTING_CATEGORIES = [
   { key: 'partner_type', label: 'Partner Types' },
@@ -86,6 +85,7 @@ export default function SettingsPage() {
   }
 
   const catSettings = settings.filter(s => s.category === activeCategory)
+  const activeLabel = SETTING_CATEGORIES.find(c => c.key === activeCategory)?.label ?? ''
 
   if (!isAdmin) return (
     <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
@@ -98,61 +98,96 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-4xl">
       <PageHeader title="Settings" description="Configure dropdown values and system settings" />
 
-      <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-        <TabsList className="flex flex-wrap h-auto gap-1">
-          {SETTING_CATEGORIES.map(cat => (
-            <TabsTrigger key={cat.key} value={cat.key} className="text-xs">
-              {cat.label}
-              <Badge variant="secondary" className="ml-1.5 text-xs tabular-nums">{settings.filter(s => s.category === cat.key).length}</Badge>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <div className="flex gap-6">
+        {/* Vertical category nav */}
+        <nav className="w-48 shrink-0 space-y-0.5">
+          {SETTING_CATEGORIES.map(cat => {
+            const count = settings.filter(s => s.category === cat.key).length
+            const active = cat.key === activeCategory
+            return (
+              <button
+                key={cat.key}
+                onClick={() => setActiveCategory(cat.key)}
+                className={cn(
+                  'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-left',
+                  active
+                    ? 'bg-primary text-primary-foreground font-semibold'
+                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                )}
+              >
+                <span className="truncate">{cat.label}</span>
+                <span className={cn(
+                  'ml-2 shrink-0 text-xs tabular-nums px-1.5 py-0.5 rounded-full font-semibold',
+                  active ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
+                )}>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </nav>
 
-        {SETTING_CATEGORIES.map(cat => (
-          <TabsContent key={cat.key} value={cat.key} className="mt-4">
-            <FadeIn>
-              <Card className="glass rounded-2xl">
-                <CardHeader className="flex flex-row items-center justify-between pb-4">
-                  <div>
-                    <CardTitle className="text-base" style={{ fontFamily: 'var(--font-display)' }}>{cat.label}</CardTitle>
-                    <CardDescription>Manage {cat.label.toLowerCase()} options</CardDescription>
-                  </div>
-                  <Button size="sm" className="rounded-xl" onClick={openCreate}><Plus className="size-4" />Add</Button>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <div className="space-y-2">{Array.from({length: 4}).map((_, i) => <PremiumSkeleton key={i} className="h-10 rounded-xl" />)}</div>
-                  ) : catSettings.length === 0 ? (
-                    <EmptyState icon={Settings} title={`No ${cat.label.toLowerCase()} configured`} description="Add your first option to get started." />
-                  ) : (
-                    <div className="space-y-2">
-                      {catSettings.map(s => (
-                        <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border hover:bg-muted/30 transition-colors">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">{s.label}</p>
-                            <p className="text-xs text-muted-foreground">Value: {s.value} · Order: <span className="tabular-nums">{s.sort_order}</span></p>
-                          </div>
-                          <Switch checked={s.is_active} onCheckedChange={() => toggleActive(s)} />
-                          <Button variant="ghost" size="icon" className="size-7 rounded-lg" onClick={() => openEdit(s)}><Edit className="size-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="size-7 rounded-lg text-destructive hover:text-destructive" onClick={() => setDeleteId(s.id)}><Trash2 className="size-3.5" /></Button>
+        {/* Content panel */}
+        <div className="flex-1 min-w-0">
+          <FadeIn key={activeCategory}>
+            <Card className="glass rounded-2xl">
+              <CardHeader className="flex flex-row items-center justify-between pb-4">
+                <div>
+                  <CardTitle className="text-base" style={{ fontFamily: 'var(--font-display)' }}>{activeLabel}</CardTitle>
+                  <CardDescription>Manage {activeLabel.toLowerCase()} options</CardDescription>
+                </div>
+                <Button size="sm" className="rounded-xl" onClick={openCreate}><Plus className="size-4" />Add</Button>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <PremiumSkeleton key={i} className="h-12 rounded-xl" />)}</div>
+                ) : catSettings.length === 0 ? (
+                  <EmptyState icon={Settings} title={`No ${activeLabel.toLowerCase()} configured`} description="Add your first option to get started." />
+                ) : (
+                  <div className="space-y-2">
+                    {catSettings.map(s => (
+                      <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{s.label}</p>
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-mono">{s.value}</span> · Order: <span className="tabular-nums">{s.sort_order}</span>
+                          </p>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </FadeIn>
-          </TabsContent>
-        ))}
-      </Tabs>
+                        <Switch checked={s.is_active} onCheckedChange={() => toggleActive(s)} />
+                        <Button variant="ghost" size="icon" className="size-7 rounded-lg shrink-0" onClick={() => openEdit(s)}>
+                          <Edit className="size-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="size-7 rounded-lg shrink-0 text-destructive hover:text-destructive" onClick={() => setDeleteId(s.id)}>
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </FadeIn>
+        </div>
+      </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle style={{ fontFamily: 'var(--font-display)' }}>{editSetting ? 'Edit Setting' : 'Add Setting'}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: 'var(--font-display)' }}>{editSetting ? 'Edit Setting' : `Add ${activeLabel}`}</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1.5"><Label>Label (Display Name)</Label><Input className="rounded-xl focus-ring" value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} /></div>
-            <div className="space-y-1.5"><Label>Value (Internal Key)</Label><Input className="rounded-xl focus-ring" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value.toLowerCase().replace(/\s+/g, '_') }))} /></div>
-            <div className="space-y-1.5"><Label>Sort Order</Label><Input type="number" className="rounded-xl focus-ring" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))} /></div>
+            <div className="space-y-1.5">
+              <Label>Label (Display Name)</Label>
+              <Input className="rounded-xl focus-ring" value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Value (Internal Key)</Label>
+              <Input className="rounded-xl focus-ring" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value.toLowerCase().replace(/\s+/g, '_') }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Sort Order</Label>
+              <Input type="number" className="rounded-xl focus-ring" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))} />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" className="rounded-xl" onClick={() => setDialogOpen(false)}>Cancel</Button>
@@ -163,7 +198,10 @@ export default function SettingsPage() {
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Delete Setting?</AlertDialogTitle><AlertDialogDescription>This may affect existing records using this value.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Setting?</AlertDialogTitle>
+            <AlertDialogDescription>This may affect existing records using this value.</AlertDialogDescription>
+          </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="rounded-xl bg-destructive text-white hover:bg-destructive/90">Delete</AlertDialogAction>

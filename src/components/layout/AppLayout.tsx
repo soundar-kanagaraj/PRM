@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Building2, LayoutDashboard, FileText, TrendingUp, DollarSign, SquareCheck as CheckSquare, Bell, Settings, LogOut, ChevronDown, BookOpen, Activity, ChartBar as BarChart3, FileStack, UserCog, Moon, Sun, Search } from 'lucide-react'
+import {
+  Building2, LayoutDashboard, FileText, TrendingUp, DollarSign,
+  SquareCheck as CheckSquare, Bell, Settings, LogOut, ChevronDown,
+  BookOpen, Activity, ChartBar as BarChart3, FileStack, UserCog, Moon, Sun, Search,
+} from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/components/theme-provider'
 import { toast } from 'sonner'
@@ -63,27 +67,14 @@ function AppSidebar() {
     href === '/' ? location.pathname === '/' : location.pathname.startsWith(href)
 
   return (
-    <Sidebar
-      collapsible="icon"
-      variant="floating"
-      className="rounded-2xl border"
-      style={{ '--sidebar-width': '16rem', '--sidebar-width-icon': '4rem' } as React.CSSProperties}
-    >
-      <SidebarHeader className="px-4 py-5">
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="px-4 py-4 border-b border-sidebar-border/50">
         <Link to="/" className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
-            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-            className="flex items-center justify-center size-10 rounded-xl btn-gradient shrink-0 shadow-lg"
-          >
-            <Building2 className="size-5 text-white" />
-          </motion.div>
+          <div className="flex items-center justify-center size-9 rounded-xl btn-gradient shrink-0 shadow-md">
+            <Building2 className="size-4 text-white" />
+          </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span
-              className="font-bold text-sm leading-tight text-sidebar-foreground"
-              style={{ fontFamily: 'var(--font-section)' }}
-            >
+            <span className="font-bold text-sm leading-tight text-sidebar-foreground" style={{ fontFamily: 'var(--font-section)' }}>
               PartnerHub
             </span>
             <span className="text-[10px] text-sidebar-foreground/50 leading-tight">PRM Platform</span>
@@ -91,10 +82,10 @@ function AppSidebar() {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 scrollbar-premium">
+      <SidebarContent className="px-2 py-2 scrollbar-premium">
         {navGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className="text-[10px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.15em] px-3 py-2">
+          <SidebarGroup key={group.label} className="py-1">
+            <SidebarGroupLabel className="text-[9px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.18em] px-3 h-6">
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -107,33 +98,29 @@ function AppSidebar() {
                         asChild
                         isActive={active}
                         tooltip={item.title}
-                        className="rounded-xl relative overflow-hidden group h-10"
+                        className="rounded-lg relative overflow-hidden group h-9"
                       >
                         <Link to={item.href}>
-                          <motion.span
-                            className="absolute inset-0 rounded-xl"
-                            initial={false}
-                            animate={active ? { opacity: 1 } : { opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            style={{
-                              background: active
-                                ? 'linear-gradient(135deg, oklch(0.546 0.215 259 / 0.12), oklch(0.600 0.136 200 / 0.04))'
-                                : 'transparent',
-                            }}
-                          />
-                          <motion.span
-                            whileHover={{ scale: 1.15 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                          >
-                            <item.icon className={cn('size-4 relative z-10 transition-colors', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/55 group-hover:text-sidebar-foreground')} />
-                          </motion.span>
-                          <span className={cn('relative z-10 text-sm', active ? 'font-semibold text-sidebar-foreground' : 'font-medium text-sidebar-foreground/70 group-hover:text-sidebar-foreground')}>
+                          {active && (
+                            <span
+                              className="absolute inset-0 rounded-lg"
+                              style={{ background: 'linear-gradient(135deg, oklch(0.546 0.215 259 / 0.15), oklch(0.600 0.136 200 / 0.05))' }}
+                            />
+                          )}
+                          <item.icon className={cn(
+                            'size-4 relative z-10 shrink-0 transition-colors',
+                            active ? 'text-sidebar-primary' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground'
+                          )} />
+                          <span className={cn(
+                            'relative z-10 text-sm',
+                            active ? 'font-semibold text-sidebar-foreground' : 'font-medium text-sidebar-foreground/70 group-hover:text-sidebar-foreground'
+                          )}>
                             {item.title}
                           </span>
                           {active && (
                             <motion.div
                               layoutId="sidebar-active-indicator"
-                              className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full btn-gradient"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r-full btn-gradient"
                               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                             />
                           )}
@@ -148,8 +135,8 @@ function AppSidebar() {
         ))}
 
         {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-[10px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.15em] px-3 py-2">
+          <SidebarGroup className="py-1">
+            <SidebarGroupLabel className="text-[9px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.18em] px-3 h-6">
               Administration
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -158,13 +145,15 @@ function AppSidebar() {
                   const active = isActive(item.href)
                   return (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="rounded-xl relative overflow-hidden group h-10">
+                      <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="rounded-lg relative overflow-hidden group h-9">
                         <Link to={item.href}>
-                          <span className="absolute inset-0 rounded-xl" style={{ background: active ? 'linear-gradient(135deg, oklch(0.546 0.215 259 / 0.12), transparent)' : 'transparent' }} />
-                          <motion.span whileHover={{ scale: 1.15 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
-                            <item.icon className={cn('size-4 relative z-10', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/55 group-hover:text-sidebar-foreground')} />
-                          </motion.span>
-                          <span className={cn('relative z-10 text-sm', active ? 'font-semibold' : 'font-medium text-sidebar-foreground/70')}>{item.title}</span>
+                          {active && (
+                            <span className="absolute inset-0 rounded-lg" style={{ background: 'linear-gradient(135deg, oklch(0.546 0.215 259 / 0.15), transparent)' }} />
+                          )}
+                          <item.icon className={cn('size-4 relative z-10 shrink-0', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground')} />
+                          <span className={cn('relative z-10 text-sm', active ? 'font-semibold text-sidebar-foreground' : 'font-medium text-sidebar-foreground/70 group-hover:text-sidebar-foreground')}>
+                            {item.title}
+                          </span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -176,9 +165,9 @@ function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="px-2 py-3">
-        <Link to="/profile" className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-sidebar-accent/50 transition-colors group-data-[collapsible=icon]:justify-center">
-          <Avatar className="size-8 shrink-0 ring-2 ring-sidebar-border/50">
+      <SidebarFooter className="px-2 py-3 border-t border-sidebar-border/50">
+        <Link to="/profile" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-sidebar-accent/40 transition-colors group-data-[collapsible=icon]:justify-center">
+          <Avatar className="size-8 shrink-0 ring-2 ring-sidebar-border/60">
             <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
               {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
             </AvatarFallback>
@@ -200,17 +189,12 @@ function SearchPalette({ open, onClose }: { open: boolean; onClose: () => void }
   const [query, setQuery] = useState('')
 
   useEffect(() => {
-    if (open) {
-      setQuery('')
-      setTimeout(() => inputRef.current?.focus(), 50)
-    }
+    if (open) { setQuery(''); setTimeout(() => inputRef.current?.focus(), 50) }
   }, [open])
 
   useEffect(() => {
     if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [open, onClose])
@@ -219,18 +203,13 @@ function SearchPalette({ open, onClose }: { open: boolean; onClose: () => void }
     ? allNavItems.filter(item => item.title.toLowerCase().includes(query.toLowerCase()))
     : allNavItems
 
-  function go(href: string) {
-    onClose()
-    navigate(href)
-  }
+  function go(href: string) { onClose(); navigate(href) }
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
           className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4"
           onClick={onClose}
@@ -252,9 +231,7 @@ function SearchPalette({ open, onClose }: { open: boolean; onClose: () => void }
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Search pages..."
                 className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && results.length > 0) go(results[0].href)
-                }}
+                onKeyDown={e => { if (e.key === 'Enter' && results.length > 0) go(results[0].href) }}
               />
               <Kbd className="text-[10px] px-1.5 py-0.5">ESC</Kbd>
             </div>
@@ -264,9 +241,7 @@ function SearchPalette({ open, onClose }: { open: boolean; onClose: () => void }
               ) : (
                 <div className="space-y-0.5">
                   {results.map(item => (
-                    <button
-                      key={item.href}
-                      onClick={() => go(item.href)}
+                    <button key={item.href} onClick={() => go(item.href)}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/60 transition-colors text-left group"
                     >
                       <div className="size-8 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
@@ -311,10 +286,7 @@ function TopBar() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        setSearchOpen(true)
-      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setSearchOpen(true) }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -322,16 +294,16 @@ function TopBar() {
 
   return (
     <>
-      <header className="topbar-float h-14 flex items-center px-4 gap-3 sticky top-0 z-40 rounded-2xl m-3 mt-0 border">
-        <SidebarTrigger className="shrink-0 hover:bg-muted/50 rounded-lg" />
-        <Separator orientation="vertical" className="h-5 bg-border/50" />
+      <header className="h-14 flex items-center px-4 gap-3 sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+        <SidebarTrigger className="shrink-0 hover:bg-muted/60 rounded-lg size-8" />
+        <Separator orientation="vertical" className="h-5 bg-border/60" />
 
         <motion.h1
           key={currentTitle}
-          initial={{ opacity: 0, x: -8 }}
+          initial={{ opacity: 0, x: -6 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.25 }}
-          className="text-sm font-semibold hidden sm:block"
+          transition={{ duration: 0.2 }}
+          className="text-sm font-semibold hidden sm:block text-foreground"
           style={{ fontFamily: 'var(--font-section)' }}
         >
           {currentTitle}
@@ -341,37 +313,30 @@ function TopBar() {
 
         <button
           onClick={() => setSearchOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors text-sm text-muted-foreground border border-border/40 cursor-pointer"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors text-muted-foreground border border-border/50 cursor-pointer"
         >
           <Search className="size-3.5" />
           <span className="text-xs">Search...</span>
-          <Kbd className="text-[10px] px-1 py-0 ml-4">⌘K</Kbd>
+          <Kbd className="text-[10px] px-1 py-0 ml-3">⌘K</Kbd>
         </button>
 
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8 rounded-lg hover:bg-muted/50"
+        <div className="flex items-center gap-0.5">
+          <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-muted/60"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
             <AnimatePresence mode="wait">
-              <motion.div
-                key={theme}
+              <motion.div key={theme}
                 initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
                 animate={{ rotate: 0, opacity: 1, scale: 1 }}
                 exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.18 }}
               >
                 {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               </motion.div>
             </AnimatePresence>
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8 rounded-lg hover:bg-muted/50 relative"
+          <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-muted/60 relative"
             onClick={() => navigate('/notifications')}
           >
             <Bell className="size-4" />
@@ -380,7 +345,7 @@ function TopBar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-8 pl-1 pr-2 rounded-lg hover:bg-muted/50">
+              <Button variant="ghost" className="flex items-center gap-2 h-8 pl-1 pr-2 rounded-lg hover:bg-muted/60">
                 <Avatar className="size-7 ring-2 ring-border/50">
                   <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
                     {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
@@ -428,14 +393,14 @@ export default function AppLayout() {
         <AppSidebar />
         <div className="flex flex-col flex-1 min-w-0">
           <TopBar />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto scrollbar-premium">
+          <main className="flex-1 p-5 sm:p-6 lg:p-8 overflow-auto scrollbar-premium">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               >
                 <Outlet />
               </motion.div>
