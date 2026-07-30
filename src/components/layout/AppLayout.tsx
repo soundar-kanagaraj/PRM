@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Building2, LayoutDashboard, FileText, TrendingUp, DollarSign, SquareCheck as CheckSquare, Bell, Settings, LogOut, ChevronDown, BookOpen, Activity, ChartBar as BarChart3, FileStack, UserCog, Moon, Sun, Search } from 'lucide-react'
@@ -47,6 +48,13 @@ const navGroups = [
   },
 ]
 
+const adminItems = [
+  { title: 'Users', href: '/users', icon: UserCog },
+  { title: 'Settings', href: '/settings', icon: Settings },
+]
+
+const allNavItems = [...navGroups.flatMap(g => g.items), ...adminItems]
+
 function AppSidebar() {
   const location = useLocation()
   const { profile, isAdmin } = useAuth()
@@ -57,7 +65,8 @@ function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="glass-sidebar !m-3 !rounded-2xl !h-[calc(100vh-1.5rem)] !border"
+      variant="floating"
+      className="rounded-2xl border"
       style={{ '--sidebar-width': '16rem', '--sidebar-width-icon': '4rem' } as React.CSSProperties}
     >
       <SidebarHeader className="px-4 py-5">
@@ -101,7 +110,6 @@ function AppSidebar() {
                         className="rounded-xl relative overflow-hidden group h-10"
                       >
                         <Link to={item.href}>
-                          {/* Active background */}
                           <motion.span
                             className="absolute inset-0 rounded-xl"
                             initial={false}
@@ -146,10 +154,7 @@ function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {[
-                  { title: 'Users', href: '/users', icon: UserCog },
-                  { title: 'Settings', href: '/settings', icon: Settings },
-                ].map((item) => {
+                {adminItems.map((item) => {
                   const active = isActive(item.href)
                   return (
                     <SidebarMenuItem key={item.href}>
@@ -189,11 +194,103 @@ function AppSidebar() {
   )
 }
 
+function SearchPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const navigate = useNavigate()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [query, setQuery] = useState('')
+
+  useEffect(() => {
+    if (open) {
+      setQuery('')
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open, onClose])
+
+  const results = query
+    ? allNavItems.filter(item => item.title.toLowerCase().includes(query.toLowerCase()))
+    : allNavItems
+
+  function go(href: string) {
+    onClose()
+    navigate(href)
+  }
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4"
+          onClick={onClose}
+        >
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            className="relative w-full max-w-lg glass rounded-2xl shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border/40">
+              <Search className="size-4 text-muted-foreground shrink-0" />
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Search pages..."
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && results.length > 0) go(results[0].href)
+                }}
+              />
+              <Kbd className="text-[10px] px-1.5 py-0.5">ESC</Kbd>
+            </div>
+            <div className="max-h-[50vh] overflow-y-auto scrollbar-premium p-2">
+              {results.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No results found</p>
+              ) : (
+                <div className="space-y-0.5">
+                  {results.map(item => (
+                    <button
+                      key={item.href}
+                      onClick={() => go(item.href)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/60 transition-colors text-left group"
+                    >
+                      <div className="size-8 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                        <item.icon className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                      <span className="text-sm font-medium">{item.title}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 function TopBar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { profile, signOut } = useAuth()
   const { theme, setTheme } = useTheme()
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const pageTitles: Record<string, string> = {
     '/': 'Dashboard', '/partners': 'Partners', '/agreements': 'Agreements',
@@ -212,97 +309,114 @@ function TopBar() {
     navigate('/login')
   }
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
   return (
-    <header className="topbar-float h-14 flex items-center px-4 gap-3 sticky top-0 z-40">
-      <SidebarTrigger className="shrink-0 hover:bg-muted/50 rounded-lg" />
-      <Separator orientation="vertical" className="h-5 bg-border/50" />
+    <>
+      <header className="topbar-float h-14 flex items-center px-4 gap-3 sticky top-0 z-40 rounded-2xl m-3 mt-0 border">
+        <SidebarTrigger className="shrink-0 hover:bg-muted/50 rounded-lg" />
+        <Separator orientation="vertical" className="h-5 bg-border/50" />
 
-      <motion.h1
-        key={currentTitle}
-        initial={{ opacity: 0, x: -8 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.25 }}
-        className="text-sm font-semibold hidden sm:block"
-        style={{ fontFamily: 'var(--font-section)' }}
-      >
-        {currentTitle}
-      </motion.h1>
-
-      <div className="flex-1" />
-
-      {/* Search */}
-      <button className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors text-sm text-muted-foreground border border-border/40">
-        <Search className="size-3.5" />
-        <span className="text-xs">Search...</span>
-        <Kbd className="text-[10px] px-1 py-0 ml-4">⌘K</Kbd>
-      </button>
-
-      <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 rounded-lg hover:bg-muted/50"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        <motion.h1
+          key={currentTitle}
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.25 }}
+          className="text-sm font-semibold hidden sm:block"
+          style={{ fontFamily: 'var(--font-section)' }}
         >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={theme}
-              initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
-              animate={{ rotate: 0, opacity: 1, scale: 1 }}
-              exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
-            >
-              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-            </motion.div>
-          </AnimatePresence>
-        </Button>
+          {currentTitle}
+        </motion.h1>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 rounded-lg hover:bg-muted/50 relative"
-          onClick={() => navigate('/notifications')}
+        <div className="flex-1" />
+
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors text-sm text-muted-foreground border border-border/40 cursor-pointer"
         >
-          <Bell className="size-4" />
-          <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
-        </Button>
+          <Search className="size-3.5" />
+          <span className="text-xs">Search...</span>
+          <Kbd className="text-[10px] px-1 py-0 ml-4">⌘K</Kbd>
+        </button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 h-8 pl-1 pr-2 rounded-lg hover:bg-muted/50">
-              <Avatar className="size-7 ring-2 ring-border/50">
-                <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
-                  {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium hidden sm:block max-w-[120px] truncate">
-                {profile?.full_name || 'User'}
-              </span>
-              <ChevronDown className="size-3 text-muted-foreground" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl glass">
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-medium leading-none">{profile?.full_name || 'User'}</p>
-                <p className="text-xs leading-none text-muted-foreground capitalize">{profile?.role?.replace('_', ' ')}</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate('/profile')}>
-              <UserCog className="size-4" /> My Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate('/notifications')}>
-              <Bell className="size-4" /> Notifications
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" className="rounded-lg cursor-pointer" onClick={handleSignOut}>
-              <LogOut className="size-4" /> Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </header>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-lg hover:bg-muted/50"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={theme}
+                initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
+                animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+              </motion.div>
+            </AnimatePresence>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-lg hover:bg-muted/50 relative"
+            onClick={() => navigate('/notifications')}
+          >
+            <Bell className="size-4" />
+            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2 h-8 pl-1 pr-2 rounded-lg hover:bg-muted/50">
+                <Avatar className="size-7 ring-2 ring-border/50">
+                  <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
+                    {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium hidden sm:block max-w-[120px] truncate">
+                  {profile?.full_name || 'User'}
+                </span>
+                <ChevronDown className="size-3 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-xl glass">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium leading-none">{profile?.full_name || 'User'}</p>
+                  <p className="text-xs leading-none text-muted-foreground capitalize">{profile?.role?.replace('_', ' ')}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate('/profile')}>
+                <UserCog className="size-4" /> My Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate('/notifications')}>
+                <Bell className="size-4" /> Notifications
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" className="rounded-lg cursor-pointer" onClick={handleSignOut}>
+                <LogOut className="size-4" /> Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   )
 }
 

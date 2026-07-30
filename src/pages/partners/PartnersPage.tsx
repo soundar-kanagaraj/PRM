@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { Plus, Search, Building2, MoreHorizontal, Edit, Eye, Trash2 } from 'lucide-react'
+import { Plus, Search, Building2, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Eye, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Partner } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -13,8 +13,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { GlassCard, PageHeader, StatusBadge, EmptyState, PremiumSkeleton, StaggerContainer, StaggerItem } from '@/components/shared/premium'
+import { GlassCard, PageHeader, StatusBadge, EmptyState, PremiumSkeleton } from '@/components/shared/premium'
 import { Pagination, usePagination } from '@/components/shared/pagination'
+import { motion } from 'framer-motion'
 
 const TIER_STYLES: Record<string, string> = {
   platinum: 'bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/20',
@@ -106,14 +107,14 @@ export default function PartnersPage() {
       <GlassCard accent className="overflow-hidden">
         <Table className="table-fixed">
           <TableHeader>
-            <TableRow className="border-border/50 hover:bg-transparent sticky top-0 z-10">
-              <TableHead className="w-[28%] text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Partner</TableHead>
-              <TableHead className="w-[14%] hidden md:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Type</TableHead>
-              <TableHead className="w-[12%] hidden lg:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Tier</TableHead>
-              <TableHead className="w-[14%] hidden md:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Country</TableHead>
-              <TableHead className="w-[12%] text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Status</TableHead>
-              <TableHead className="w-[14%] hidden lg:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Created</TableHead>
-              <TableHead className="w-[6%]" />
+            <TableRow className="border-border/50 hover:bg-transparent sticky top-0 z-10 bg-card/80 backdrop-blur-sm">
+              <TableHead className="w-[28%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Partner</TableHead>
+              <TableHead className="w-[14%] hidden md:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Type</TableHead>
+              <TableHead className="w-[12%] hidden lg:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Tier</TableHead>
+              <TableHead className="w-[14%] hidden md:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Country</TableHead>
+              <TableHead className="w-[12%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Status</TableHead>
+              <TableHead className="w-[14%] hidden lg:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Created</TableHead>
+              <TableHead className="w-[6%] h-11" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -125,46 +126,47 @@ export default function PartnersPage() {
               <TableRow><TableCell colSpan={7} className="border-0">
                 <EmptyState icon={Building2} title="No partners found" description="Get started by creating your first partner" action={canEdit ? <Button asChild className="btn-gradient text-white rounded-xl"><Link to="/partners/new"><Plus className="size-4" />Add Partner</Link></Button> : undefined} />
               </TableCell></TableRow>
-            ) : (
-              <StaggerContainer>
-                {paginated.map(partner => (
-                  <StaggerItem key={partner.id}>
-                    <TableRow className="row-hover group border-border/30 cursor-pointer" onClick={() => navigate(`/partners/${partner.id}`)}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center shrink-0">
-                            <Building2 className="size-4 text-primary" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm truncate max-w-[200px]">{partner.partner_name}</p>
-                            <p className="text-xs text-muted-foreground truncate max-w-[200px]">{partner.email ?? partner.website ?? partner.primary_contact ?? ''}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-[200px]">{partner.partner_type ?? '—'}</TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        {partner.tier ? <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${TIER_STYLES[partner.tier] ?? TIER_STYLES.registered}`}>{partner.tier}</span> : '—'}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-[200px]">{partner.country ?? '—'}</TableCell>
-                      <TableCell><StatusBadge status={partner.status} variant={partner.status === 'active' ? 'active' : partner.status === 'suspended' ? 'danger' : 'inactive'} /></TableCell>
-                      <TableCell className="hidden lg:table-cell text-sm text-muted-foreground tabular-nums">{format(new Date(partner.created_at), 'MMM d, yyyy')}</TableCell>
-                      <TableCell onClick={e => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="size-7 rounded-lg hover:bg-muted/50"><MoreHorizontal className="size-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="rounded-xl">
-                            <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate(`/partners/${partner.id}`)}><Eye className="size-4" />View</DropdownMenuItem>
-                            {canEdit && <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate(`/partners/${partner.id}/edit`)}><Edit className="size-4" />Edit</DropdownMenuItem>}
-                            {isAdmin && <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" className="rounded-lg cursor-pointer" onClick={() => setDeleteId(partner.id)}><Trash2 className="size-4" />Delete</DropdownMenuItem></>}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            )}
+            ) : paginated.map((partner, idx) => (
+              <motion.tr
+                key={partner.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.25, delay: Math.min(idx * 0.03, 0.3) }}
+                className="row-hover group border-border/30 cursor-pointer"
+                onClick={() => navigate(`/partners/${partner.id}`)}
+              >
+                <TableCell className="py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-9 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center shrink-0">
+                      <Building2 className="size-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate max-w-[200px]">{partner.partner_name}</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[200px]">{partner.email ?? partner.website ?? partner.primary_contact ?? ''}</p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-[200px] py-3">{partner.partner_type ?? '—'}</TableCell>
+                <TableCell className="hidden lg:table-cell py-3">
+                  {partner.tier ? <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${TIER_STYLES[partner.tier] ?? TIER_STYLES.registered}`}>{partner.tier}</span> : '—'}
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-[200px] py-3">{partner.country ?? '—'}</TableCell>
+                <TableCell className="py-3"><StatusBadge status={partner.status} variant={partner.status === 'active' ? 'active' : partner.status === 'suspended' ? 'danger' : 'inactive'} /></TableCell>
+                <TableCell className="hidden lg:table-cell text-sm text-muted-foreground tabular-nums py-3">{format(new Date(partner.created_at), 'MMM d, yyyy')}</TableCell>
+                <TableCell className="py-3" onClick={e => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="size-7 rounded-lg hover:bg-muted/50"><MoreHorizontal className="size-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-xl">
+                      <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate(`/partners/${partner.id}`)}><Eye className="size-4" />View</DropdownMenuItem>
+                      {canEdit && <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate(`/partners/${partner.id}/edit`)}><Edit className="size-4" />Edit</DropdownMenuItem>}
+                      {isAdmin && <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" className="rounded-lg cursor-pointer" onClick={() => setDeleteId(partner.id)}><Trash2 className="size-4" />Delete</DropdownMenuItem></>}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </motion.tr>
+            ))}
           </TableBody>
         </Table>
         <Pagination page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />

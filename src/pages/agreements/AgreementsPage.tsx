@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, FileText, MoreHorizontal, Edit, Trash2, Clock } from 'lucide-react'
+import { Plus, Search, FileText, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, Clock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Agreement } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,9 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
-  GlassCard, PageHeader, StatusBadge, FadeIn, EmptyState, PremiumSkeleton, StaggerContainer, StaggerItem
+  GlassCard, PageHeader, StatusBadge, FadeIn, EmptyState, PremiumSkeleton
 } from '@/components/shared/premium'
 import { Pagination, usePagination } from '@/components/shared/pagination'
+import { motion } from 'framer-motion'
 
 type AgreementWithPartner = Agreement & { partners: { partner_name: string } | null }
 
@@ -114,13 +115,13 @@ export default function AgreementsPage() {
           <CardContent className="p-0">
             <Table className="table-fixed">
               <TableHeader>
-                <TableRow className="sticky top-0 z-10">
-                  <TableHead className="w-[28%]">Agreement</TableHead>
-                  <TableHead className="w-[16%] hidden md:table-cell">Partner</TableHead>
-                  <TableHead className="w-[14%] hidden lg:table-cell">Type</TableHead>
-                  <TableHead className="w-[16%] hidden md:table-cell">Expiry Date</TableHead>
-                  <TableHead className="w-[14%]">Status</TableHead>
-                  <TableHead className="w-[6%]" />
+                <TableRow className="sticky top-0 z-10 bg-card/80 backdrop-blur-sm hover:bg-transparent">
+                  <TableHead className="w-[28%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Agreement</TableHead>
+                  <TableHead className="w-[16%] hidden md:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Partner</TableHead>
+                  <TableHead className="w-[14%] hidden lg:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Type</TableHead>
+                  <TableHead className="w-[16%] hidden md:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Expiry Date</TableHead>
+                  <TableHead className="w-[14%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Status</TableHead>
+                  <TableHead className="w-[6%] h-11" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -137,54 +138,54 @@ export default function AgreementsPage() {
                       />
                     </TableCell>
                   </TableRow>
-                ) : (
-                  <StaggerContainer>
-                    {paginated.map(a => {
-                      const isExpiringSoon = a.expiry_date && isAfter(new Date(a.expiry_date), now) && isBefore(new Date(a.expiry_date), addDays(now, 30))
-                      return (
-                        <StaggerItem key={a.id}>
-                        <TableRow className="row-hover group hover:bg-muted/50">
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <div className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${isExpiringSoon ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-primary/10'}`}>
-                                  {isExpiringSoon ? <Clock className="size-4 text-amber-600" /> : <FileText className="size-4 text-primary" />}
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="font-medium text-sm truncate max-w-[200px]">{a.agreement_name}</p>
-                                  {a.agreement_number && <p className="text-xs text-muted-foreground tabular-nums truncate max-w-[200px]">#{a.agreement_number}</p>}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell text-sm truncate max-w-[200px]">{a.partners?.partner_name ?? '—'}</TableCell>
-                            <TableCell className="hidden lg:table-cell text-sm text-muted-foreground truncate max-w-[200px]">{a.agreement_type ?? '—'}</TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              {a.expiry_date ? (
-                                <span className={`text-sm tabular-nums ${isExpiringSoon ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
-                                  {format(new Date(a.expiry_date), 'MMM d, yyyy')}
-                                  {isExpiringSoon && ' ⚠'}
-                                </span>
-                              ) : '—'}
-                            </TableCell>
-                            <TableCell>
-                              <StatusBadge status={a.status} variant={STATUS_VARIANTS[a.status] ?? 'info'} />
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="size-7 rounded-lg"><MoreHorizontal className="size-4" /></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  {canEdit && <DropdownMenuItem onClick={() => navigate(`/agreements/${a.id}/edit`)}><Edit className="size-4" />Edit</DropdownMenuItem>}
-                                  {isAdmin && <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleteId(a.id)}><Trash2 className="size-4" />Delete</DropdownMenuItem></>}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                        </TableRow>
-                        </StaggerItem>
-                      )
-                    })}
-                  </StaggerContainer>
-                )}
+                ) : paginated.map((a, idx) => {
+                  const isExpiringSoon = a.expiry_date && isAfter(new Date(a.expiry_date), now) && isBefore(new Date(a.expiry_date), addDays(now, 30))
+                  return (
+                    <motion.tr
+                      key={a.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.25, delay: Math.min(idx * 0.03, 0.3) }}
+                      className="row-hover group hover:bg-muted/50 border-border/30"
+                    >
+                      <TableCell className="py-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${isExpiringSoon ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-primary/10'}`}>
+                            {isExpiringSoon ? <Clock className="size-4 text-amber-600" /> : <FileText className="size-4 text-primary" />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm truncate max-w-[200px]">{a.agreement_name}</p>
+                            {a.agreement_number && <p className="text-xs text-muted-foreground tabular-nums truncate max-w-[200px]">#{a.agreement_number}</p>}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-sm truncate max-w-[200px] py-3">{a.partners?.partner_name ?? '—'}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-sm text-muted-foreground truncate max-w-[200px] py-3">{a.agreement_type ?? '—'}</TableCell>
+                      <TableCell className="hidden md:table-cell py-3">
+                        {a.expiry_date ? (
+                          <span className={`text-sm tabular-nums ${isExpiringSoon ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                            {format(new Date(a.expiry_date), 'MMM d, yyyy')}
+                            {isExpiringSoon && ' ⚠'}
+                          </span>
+                        ) : '—'}
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <StatusBadge status={a.status} variant={STATUS_VARIANTS[a.status] ?? 'info'} />
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="size-7 rounded-lg"><MoreHorizontal className="size-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {canEdit && <DropdownMenuItem onClick={() => navigate(`/agreements/${a.id}/edit`)}><Edit className="size-4" />Edit</DropdownMenuItem>}
+                            {isAdmin && <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleteId(a.id)}><Trash2 className="size-4" />Delete</DropdownMenuItem></>}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </motion.tr>
+                  )
+                })}
               </TableBody>
             </Table>
             <Pagination page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />

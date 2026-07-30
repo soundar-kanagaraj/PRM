@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Target, TrendingUp, Trophy, Percent } from 'lucide-react'
+import { Plus, Search, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, Target, TrendingUp, Trophy, Percent } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Opportunity } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -109,15 +109,15 @@ export default function OpportunitiesPage() {
           <CardContent className="p-0">
             <Table className="table-fixed">
               <TableHeader>
-                <TableRow className="sticky top-0 z-10">
-                  <TableHead className="w-[24%]">Opportunity</TableHead>
-                  <TableHead className="w-[14%] hidden md:table-cell">Partner</TableHead>
-                  <TableHead className="w-[14%] hidden lg:table-cell">Customer</TableHead>
-                  <TableHead className="w-[12%]">Stage</TableHead>
-                  <TableHead className="w-[14%] hidden md:table-cell">Revenue</TableHead>
-                  <TableHead className="w-[12%] hidden lg:table-cell">Probability</TableHead>
-                  <TableHead className="w-[14%] hidden lg:table-cell">Close Date</TableHead>
-                  <TableHead className="w-[6%]" />
+                <TableRow className="sticky top-0 z-10 bg-card/80 backdrop-blur-sm hover:bg-transparent">
+                  <TableHead className="w-[24%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Opportunity</TableHead>
+                  <TableHead className="w-[14%] hidden md:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Partner</TableHead>
+                  <TableHead className="w-[14%] hidden lg:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Customer</TableHead>
+                  <TableHead className="w-[12%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Stage</TableHead>
+                  <TableHead className="w-[14%] hidden md:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Revenue</TableHead>
+                  <TableHead className="w-[12%] hidden lg:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Probability</TableHead>
+                  <TableHead className="w-[14%] hidden lg:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Close Date</TableHead>
+                  <TableHead className="w-[6%] h-11" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -140,32 +140,32 @@ export default function OpportunitiesPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.25, delay: Math.min(idx * 0.03, 0.3) }}
-                    className="row-hover group hover:bg-muted/50"
+                    className="row-hover group hover:bg-muted/50 border-border/30"
                   >
-                    <TableCell>
+                    <TableCell className="py-3">
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate max-w-[200px]">{o.opportunity_name}</p>
                         {o.opportunity_ref && <p className="text-xs text-muted-foreground truncate max-w-[200px]">#{o.opportunity_ref}</p>}
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-sm truncate max-w-[200px]">{o.partners?.partner_name ?? '—'}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground truncate max-w-[200px]">{o.customer_name ?? '—'}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell text-sm truncate max-w-[200px] py-3">{o.partners?.partner_name ?? '—'}</TableCell>
+                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground truncate max-w-[200px] py-3">{o.customer_name ?? '—'}</TableCell>
+                    <TableCell className="py-3">
                       <StatusBadge status={o.stage} variant={STAGE_VARIANT[o.stage]} />
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
+                    <TableCell className="hidden md:table-cell py-3">
                       <span className="text-sm font-medium tabular-nums truncate max-w-[200px] inline-block">{o.currency} {o.estimated_revenue?.toLocaleString()}</span>
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell">
+                    <TableCell className="hidden lg:table-cell py-3">
                       <div className="flex items-center gap-2">
                         <Progress value={o.probability} className="w-16 h-1.5" />
                         <span className="text-xs text-muted-foreground tabular-nums">{o.probability}%</span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground tabular-nums truncate max-w-[200px]">
+                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground tabular-nums truncate max-w-[200px] py-3">
                       {o.expected_close_date ? format(new Date(o.expected_close_date), 'MMM d, yyyy') : '—'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-3">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-7 rounded-xl"><MoreHorizontal className="size-4" /></Button>

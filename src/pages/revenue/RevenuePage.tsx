@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, DollarSign, MoreHorizontal, Edit, Trash2, TrendingUp, Clock, AlertCircle } from 'lucide-react'
+import { Plus, Search, DollarSign, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, TrendingUp, Clock, CircleAlert as AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { RevenueRecord } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -174,14 +174,14 @@ export default function RevenuePage() {
           <CardContent className="p-0">
             <Table className="table-fixed">
               <TableHeader>
-                <TableRow className="sticky top-0 z-10">
-                  <TableHead className="w-[22%]">Partner</TableHead>
-                  <TableHead className="w-[14%] hidden md:table-cell">Type</TableHead>
-                  <TableHead className="w-[14%] hidden lg:table-cell">Period</TableHead>
-                  <TableHead className="w-[16%]">Amount</TableHead>
-                  <TableHead className="w-[14%] hidden md:table-cell">Invoice</TableHead>
-                  <TableHead className="w-[14%]">Status</TableHead>
-                  <TableHead className="w-[6%]" />
+                <TableRow className="sticky top-0 z-10 bg-card/80 backdrop-blur-sm hover:bg-transparent">
+                  <TableHead className="w-[22%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Partner</TableHead>
+                  <TableHead className="w-[14%] hidden md:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Type</TableHead>
+                  <TableHead className="w-[14%] hidden lg:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Period</TableHead>
+                  <TableHead className="w-[16%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Amount</TableHead>
+                  <TableHead className="w-[14%] hidden md:table-cell h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Invoice</TableHead>
+                  <TableHead className="w-[14%] h-11 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Status</TableHead>
+                  <TableHead className="w-[6%] h-11" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -204,26 +204,26 @@ export default function RevenuePage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.25, delay: Math.min(idx * 0.03, 0.3) }}
-                    className="row-hover group hover:bg-muted/50"
+                    className="row-hover group hover:bg-muted/50 border-border/30"
                   >
-                    <TableCell>
+                    <TableCell className="py-3">
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate max-w-[200px]">{r.partners?.partner_name ?? 'Unknown'}</p>
                         <p className="text-xs text-muted-foreground truncate max-w-[200px]">{r.revenue_source ?? ''}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-[200px]">{r.revenue_type ?? '—'}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground tabular-nums">
+                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-[200px] py-3">{r.revenue_type ?? '—'}</TableCell>
+                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground tabular-nums py-3">
                       {r.financial_year ? `FY${r.financial_year}` : ''} {r.quarter ? `Q${r.quarter}` : ''}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-3">
                       <span className="font-semibold text-sm tabular-nums">{r.currency} {r.amount.toLocaleString()}</span>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-[200px]">{r.invoice_number ?? '—'}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-[200px] py-3">{r.invoice_number ?? '—'}</TableCell>
+                    <TableCell className="py-3">
                       <StatusBadge status={r.payment_status} variant={PAYMENT_VARIANT[r.payment_status] ?? 'info'} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-3">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-7 rounded-xl"><MoreHorizontal className="size-4" /></Button>
