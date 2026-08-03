@@ -90,13 +90,18 @@ function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="px-3 h-12 flex items-center justify-center border-b border-sidebar-border">
+      <SidebarHeader className="px-3 h-12 flex items-center border-b border-sidebar-border">
+        {/* Full logo when expanded */}
         <Link to="/" className="flex items-center group-data-[collapsible=icon]:hidden">
           <span className="logo-text">LinkIt</span>
         </Link>
+        {/* Just "L" icon when collapsed */}
+        <Link to="/" className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full">
+          <span className="logo-text">L</span>
+        </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-2 scrollbar-thin">
+      <SidebarContent className="px-2 py-2 scrollbar-thin group-data-[collapsible=icon]:px-1.5">
         {navGroups.map((group) => (
           <SidebarGroup key={group.label} className="py-1">
             <div className="px-2.5 pb-1 pt-1.5 group-data-[collapsible=icon]:hidden">

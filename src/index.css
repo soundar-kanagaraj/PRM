@@ -282,13 +282,10 @@
   /* ── Logo ── */
   .logo-text {
     font-family: var(--font-sans);
-    font-weight: 700;
-    font-size: 1.0625rem;
+    font-weight: 500;
+    font-size: 1.15rem;
     letter-spacing: -0.02em;
-    background: linear-gradient(90deg, #3B82F6 0%, #06B6D4 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--foreground);
   }
 
   /* ── Surfaces ── */
