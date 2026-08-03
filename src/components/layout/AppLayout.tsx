@@ -5,7 +5,7 @@ import {
   LayoutDashboard, FileText, TrendingUp, DollarSign,
   SquareCheck as CheckSquare, Bell, Settings, LogOut, ChevronDown,
   BookOpen, Activity, ChartBar as BarChart3, FileStack, UserCog,
-  Moon, Sun, Search, PanelLeftClose,
+  Moon, Sun, Search, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/components/theme-provider'
@@ -84,25 +84,16 @@ function NavItem({ item, active }: { item: { title: string; href: string; icon: 
 function AppSidebar() {
   const location = useLocation()
   const { profile, isAdmin } = useAuth()
-  const { toggleSidebar } = useSidebar()
 
   const isActive = (href: string) =>
     href === '/' ? location.pathname === '/' : location.pathname.startsWith(href)
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="px-3 h-12 flex items-center justify-between border-b border-sidebar-border">
-        <Link to="/" className="flex items-center group-data-[collapsible=icon]:justify-center flex-1">
+      <SidebarHeader className="px-3 h-12 flex items-center justify-center border-b border-sidebar-border">
+        <Link to="/" className="flex items-center group-data-[collapsible=icon]:hidden">
           <span className="logo-text">LinkIt</span>
         </Link>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-6 rounded-md shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent group-data-[collapsible=icon]:hidden"
-          onClick={toggleSidebar}
-        >
-          <PanelLeftClose className="size-3.5" />
-        </Button>
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-2 scrollbar-thin">
@@ -285,6 +276,7 @@ function TopBar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { profile, signOut } = useAuth()
+  const { toggleSidebar, open } = useSidebar()
   const [searchOpen, setSearchOpen] = useState(false)
 
   const pageTitles: Record<string, string> = {
@@ -315,6 +307,15 @@ function TopBar() {
   return (
     <>
       <header className="h-12 flex items-center px-4 gap-3 sticky top-0 z-40 bg-background border-b border-border">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 rounded-md shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+          onClick={toggleSidebar}
+          title={open ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          {open ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
+        </Button>
         <AnimatePresence mode="wait">
           <motion.h1
             key={currentTitle}
