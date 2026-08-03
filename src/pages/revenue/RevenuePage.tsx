@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, DollarSign, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, TrendingUp, Clock, CircleAlert as AlertCircle } from 'lucide-react'
+import { Plus, Search, DollarSign, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, TrendingUp, Clock, CircleAlert as AlertCircle, Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { RevenueRecord } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -17,6 +17,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { motion } from 'framer-motion'
 import { GlassCard, StatCard, PageHeader, StatusBadge, FadeIn, StaggerContainer, StaggerItem, EmptyState, PremiumSkeleton } from '@/components/shared/premium'
 import { Pagination, usePagination } from '@/components/shared/pagination'
+import { usePdfExport } from '@/hooks/usePdfExport'
 
 type RevWithPartner = RevenueRecord & { partners: { partner_name: string } | null }
 
@@ -87,11 +88,26 @@ export default function RevenuePage() {
 
   const chartConfig = { revenue: { label: 'Revenue', color: 'var(--chart-1)' } }
   const { page, pageSize, total, paginated, onPageChange } = usePagination(filtered, 10)
+  const { exportToPdf, exporting } = usePdfExport()
+
+  async function handleExport() {
+    try {
+      await exportToPdf(`linkit-revenue-${new Date().toISOString().split('T')[0]}.pdf`)
+      toast.success('Revenue exported as PDF')
+    } catch {
+      toast.error('Failed to export PDF')
+    }
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader title="Revenue Management" description={`${filtered.length} records`}>
-        {canEdit && <Button asChild className="rounded-xl"><Link to="/revenue/new"><Plus className="size-4" />Add Revenue</Link></Button>}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="rounded-xl" onClick={handleExport} disabled={exporting}>
+            <Download className="size-4" />{exporting ? 'Exporting...' : 'Export'}
+          </Button>
+          {canEdit && <Button asChild className="rounded-xl"><Link to="/revenue/new"><Plus className="size-4" />Add Revenue</Link></Button>}
+        </div>
       </PageHeader>
 
       <StaggerContainer className="grid grid-cols-1 sm:grid-cols-3 gap-4">

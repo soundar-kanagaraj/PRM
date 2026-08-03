@@ -8,6 +8,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Toolti
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { PageHeader, StatCard, EmptyState, FadeIn, StaggerContainer, StaggerItem, GlassCard } from '@/components/shared/premium'
 import { Pagination, usePagination } from '@/components/shared/pagination'
+import { usePdfExport } from '@/hooks/usePdfExport'
+import { toast } from 'sonner'
 
 const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
 
@@ -71,11 +73,24 @@ export default function ReportsPage() {
   })
   const topPartners = Object.values(partnerRevMap).sort((a, b) => b.revenue - a.revenue)
   const { page, pageSize, total, paginated, onPageChange } = usePagination(topPartners, 10)
+  const { exportToPdf, exporting } = usePdfExport()
+
+  async function handleExport() {
+    try {
+      await exportToPdf(`linkit-reports-${new Date().toISOString().split('T')[0]}.pdf`)
+      toast.success('Report exported as PDF')
+    } catch {
+      toast.error('Failed to export PDF')
+    }
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader title="Reports & Analytics" description="Partnership performance insights">
-        <Button variant="outline" size="sm" className="rounded-xl"><Download className="size-4" />Export</Button>
+        <Button variant="outline" size="sm" className="rounded-xl" onClick={handleExport} disabled={exporting}>
+          <Download className="size-4" />
+          {exporting ? 'Exporting...' : 'Export'}
+        </Button>
       </PageHeader>
 
       <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4">

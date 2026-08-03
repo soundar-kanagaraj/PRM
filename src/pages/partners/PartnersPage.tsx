@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { Plus, Search, Building2, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Eye, Trash2 } from 'lucide-react'
+import { Plus, Search, Building2, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Eye, Trash2, Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Partner } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { GlassCard, PageHeader, StatusBadge, EmptyState, PremiumSkeleton } from '@/components/shared/premium'
+import { usePdfExport } from '@/hooks/usePdfExport'
 import { Pagination, usePagination } from '@/components/shared/pagination'
 import { motion } from 'framer-motion'
 
@@ -65,15 +66,30 @@ export default function PartnersPage() {
 
   const partnerTypes = [...new Set(partners.map(p => p.partner_type).filter(Boolean))] as string[]
   const { page, pageSize, total, paginated, onPageChange } = usePagination(filtered, 10)
+  const { exportToPdf, exporting } = usePdfExport()
+
+  async function handleExport() {
+    try {
+      await exportToPdf(`linkit-partners-${new Date().toISOString().split('T')[0]}.pdf`)
+      toast.success('Partners list exported as PDF')
+    } catch {
+      toast.error('Failed to export PDF')
+    }
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader title="Partners" description={`${filtered.length} of ${partners.length} partners`}>
-        {canEdit && (
-          <Button asChild className="btn-gradient text-white rounded-xl">
-            <Link to="/partners/new"><Plus className="size-4" />Add Partner</Link>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="rounded-xl" onClick={handleExport} disabled={exporting}>
+            <Download className="size-4" />{exporting ? 'Exporting...' : 'Export'}
           </Button>
-        )}
+          {canEdit && (
+            <Button asChild className="btn-gradient text-white rounded-xl">
+              <Link to="/partners/new"><Plus className="size-4" />Add Partner</Link>
+            </Button>
+          )}
+        </div>
       </PageHeader>
 
       <div className="flex flex-col sm:flex-row gap-3 mt-2">

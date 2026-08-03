@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Switch } from '@/components/ui/switch'
-import { PageHeader, EmptyState, PremiumSkeleton, FadeIn } from '@/components/shared/premium'
+import { PageHeader, EmptyState, PremiumSkeleton, FadeIn, GlassCard } from '@/components/shared/premium'
+import { ThemeSelector } from '@/components/shared/theme-selector'
 import { cn } from '@/lib/utils'
 
 const SETTING_CATEGORIES = [
@@ -97,6 +98,19 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <PageHeader title="Settings" description="Configure dropdown values and system settings" />
+
+      {/* Theme appearance */}
+      <GlassCard accent className="p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Appearance</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Choose your theme color and light/dark mode</p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <ThemeSelector />
+          </div>
+        </div>
+      </GlassCard>
 
       <div className="flex gap-6">
         {/* Vertical category nav */}
