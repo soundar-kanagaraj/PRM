@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/components/theme-provider'
+import { ThemeProvider as ColorThemeProvider } from '@/contexts/ThemeContext'
 import { Toaster } from '@/components/ui/sonner'
 
 import LoginPage from '@/pages/auth/LoginPage'
@@ -51,6 +52,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="prm-theme">
+      <ColorThemeProvider>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -86,6 +88,7 @@ export default function App() {
         </BrowserRouter>
         <Toaster position="top-right" />
       </AuthProvider>
+      </ColorThemeProvider>
     </ThemeProvider>
   )
 }

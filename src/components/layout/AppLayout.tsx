@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   LayoutDashboard, FileText, TrendingUp, DollarSign,
   SquareCheck as CheckSquare, Bell, Settings, LogOut, ChevronDown,
-  BookOpen, Activity, ChartBar as BarChart3, FileStack, UserCog, Moon, Sun, Search,
+  BookOpen, Activity, ChartBar as BarChart3, FileStack, UserCog,
+  Moon, Sun, Search, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/components/theme-provider'
+import { useThemeColor, themeColors, type ThemeColor } from '@/contexts/ThemeContext'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -16,11 +18,10 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Separator } from '@/components/ui/separator'
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
   SidebarHeader, SidebarMenu, SidebarMenuButton,
-  SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarRail,
+  SidebarMenuItem, SidebarProvider, SidebarRail, useSidebar,
 } from '@/components/ui/sidebar'
 import { Kbd } from '@/components/ui/kbd'
 
@@ -62,6 +63,50 @@ const adminItems = [
 
 const allNavItems = [...navGroups.flatMap(g => g.items), ...adminItems]
 
+function NavItem({ item, active }: { item: { title: string; href: string; icon: React.ElementType }; active: boolean }) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        tooltip={item.title}
+        className={cn(
+          'rounded-md h-9 text-[13px] px-2.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0',
+          active ? 'bg-accent/70' : 'hover:bg-accent/70'
+        )}
+      >
+        <Link to={item.href} className="w-full flex items-center gap-2.5">
+          <item.icon className={cn(
+            'size-4 shrink-0 transition-colors',
+            active ? 'text-primary' : 'text-muted-foreground'
+          )} />
+          <span className={cn(
+            'truncate group-data-[collapsible=icon]:hidden',
+            active ? 'font-medium text-foreground' : 'text-muted-foreground'
+          )}>
+            {item.title}
+          </span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+}
+
+function AppLogo({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className="flex items-center justify-start min-w-0">
+      <div className="min-w-0">
+        <div className="logo-text leading-none">LinkIt</div>
+        {!compact && (
+          <div className="text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground/70">
+            PRM
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function AppSidebar() {
   const location = useLocation()
   const { profile, isAdmin } = useAuth()
@@ -70,115 +115,151 @@ function AppSidebar() {
     href === '/' ? location.pathname === '/' : location.pathname.startsWith(href)
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="px-5 py-5 border-b border-sidebar-border/50">
-        <Link to="/" className="flex items-center group-data-[collapsible=icon]:justify-center">
-          <span className="logo-text text-2xl leading-none">Linkit</span>
+    <Sidebar collapsible="icon" className="left-0 top-0 bottom-0 h-full rounded-none border-r border-border/70 bg-sidebar text-sidebar-foreground shadow-none">
+      <SidebarHeader className="flex items-center justify-start px-3 py-3 border-b border-sidebar-border/70">
+        <Link to="/" className="flex items-center justify-start w-full group-data-[collapsible=icon]:hidden">
+          <AppLogo />
+        </Link>
+        <Link to="/" className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full">
+          <AppLogo compact />
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-3 scrollbar-premium">
+      <SidebarContent className="px-2 py-2 scrollbar-thin group-data-[collapsible=icon]:px-1.5">
         {navGroups.map((group) => (
-          <SidebarGroup key={group.label} className="py-1.5">
-            <div className="px-3 pb-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/45">
+          <SidebarGroup key={group.label} className="py-1">
+            <div className="px-2.5 pb-1 pt-1.5 group-data-[collapsible=icon]:hidden">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
                 {group.label}
               </span>
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.map((item) => {
-                  const active = isActive(item.href)
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={active}
-                        tooltip={item.title}
-                        className="rounded-lg h-9 relative"
-                      >
-                        <Link to={item.href}>
-                          {active && (
-                            <motion.div
-                              layoutId="sidebar-active"
-                              className="absolute inset-0 rounded-lg"
-                              style={{ background: 'var(--sidebar-accent)' }}
-                              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                            />
-                          )}
-                          <item.icon className={cn(
-                            'size-4 relative z-10 shrink-0 transition-colors',
-                            active ? 'text-sidebar-primary' : 'text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80'
-                          )} />
-                          <span className={cn(
-                            'relative z-10 text-sm transition-colors',
-                            active ? 'font-semibold text-sidebar-primary' : 'font-medium text-sidebar-foreground/65 group-hover:text-sidebar-foreground'
-                          )}>
-                            {item.title}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
+                {group.items.map((item) => (
+                  <NavItem key={item.href} item={item} active={isActive(item.href)} />
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
 
         {isAdmin && (
-          <SidebarGroup className="py-1.5">
-            <div className="px-3 pb-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/45">
+          <SidebarGroup className="py-1">
+            <div className="px-2.5 pb-1 pt-1.5 group-data-[collapsible=icon]:hidden">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
                 Admin
               </span>
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {adminItems.map((item) => {
-                  const active = isActive(item.href)
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="rounded-lg h-9 relative">
-                        <Link to={item.href}>
-                          {active && (
-                            <motion.div
-                              layoutId="sidebar-active"
-                              className="absolute inset-0 rounded-lg"
-                              style={{ background: 'var(--sidebar-accent)' }}
-                              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                            />
-                          )}
-                          <item.icon className={cn('size-4 relative z-10 shrink-0', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80')} />
-                          <span className={cn('relative z-10 text-sm', active ? 'font-semibold text-sidebar-primary' : 'font-medium text-sidebar-foreground/65 group-hover:text-sidebar-foreground')}>
-                            {item.title}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
+                {adminItems.map((item) => (
+                  <NavItem key={item.href} item={item} active={isActive(item.href)} />
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         )}
       </SidebarContent>
 
-      <SidebarFooter className="px-3 py-3 border-t border-sidebar-border/50">
-        <Link to="/profile" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors group-data-[collapsible=icon]:justify-center">
-          <Avatar className="size-8 shrink-0 ring-2 ring-sidebar-border/40">
-            <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
+      <SidebarFooter className="px-2 py-2 border-t border-sidebar-border/70">
+        <Link
+          to="/profile"
+          className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-accent transition-colors group-data-[collapsible=icon]:justify-center"
+        >
+          <Avatar className="size-6 shrink-0">
+            <AvatarFallback className="text-[10px] bg-primary text-primary-foreground font-medium">
               {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="text-xs font-semibold text-sidebar-foreground truncate">{profile?.full_name || 'User'}</span>
-            <span className="text-[10px] text-sidebar-foreground/45 truncate capitalize">{profile?.role?.replace('_', ' ')}</span>
+            <span className="text-xs font-medium text-foreground truncate">{profile?.full_name || 'User'}</span>
+            <span className="text-[10px] text-muted-foreground truncate capitalize">{profile?.role?.replace('_', ' ')}</span>
           </div>
         </Link>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
+  )
+}
+
+function ThemeMenu() {
+  const { theme, setTheme } = useTheme()
+  const { color, setColor } = useThemeColor()
+  const [siteScale, setSiteScale] = useState(1)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('linkit-ui-scale')
+    if (saved === '1.5' || saved === '2') {
+      setSiteScale(Number(saved))
+    }
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--app-ui-scale', siteScale.toString())
+    localStorage.setItem('linkit-ui-scale', siteScale.toString())
+  }, [siteScale])
+
+  const sizeOptions = [
+    { label: 'Normal', value: 1 },
+    { label: '1.5x', value: 1.5 },
+    { label: '2x', value: 2 },
+  ] as const
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent">
+          <span className="size-3.5 rounded-full" style={{ background: 'var(--primary)' }} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56 p-1">
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-1.5 py-1.5">
+          Accent Color
+        </DropdownMenuLabel>
+        <div className="grid grid-cols-1 gap-0.5 px-0.5 pb-1">
+          {themeColors.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setColor(t.id as ThemeColor)}
+              className={cn(
+                'flex items-center gap-2.5 px-2 py-1.5 rounded-md text-[13px] transition-colors',
+                color === t.id ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+            >
+              <span className="size-3.5 rounded-full shrink-0" style={{ background: t.swatch }} />
+              <span className="flex-1 text-left">{t.label}</span>
+              {color === t.id && <span className="size-1.5 rounded-full bg-primary" />}
+            </button>
+          ))}
+        </div>
+        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-1.5 py-1.5">
+          Site size
+        </DropdownMenuLabel>
+        <div className="grid grid-cols-3 gap-1 px-0.5 pb-1">
+          {sizeOptions.map((option) => (
+            <button
+              key={option.label}
+              onClick={() => setSiteScale(option.value)}
+              className={cn(
+                'rounded-md border px-2 py-1.5 text-[12px] transition-colors',
+                siteScale === option.value ? 'border-primary bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuItem
+          className="rounded-md text-[13px] cursor-pointer"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -209,44 +290,42 @@ function SearchPalette({ open, onClose }: { open: boolean; onClose: () => void }
       {open && (
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4"
+          transition={{ duration: 0.12 }}
+          className="fixed inset-0 z-50 flex items-start justify-center pt-[18vh] px-4"
           onClick={onClose}
         >
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/20" />
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="relative w-full max-w-lg glass rounded-2xl shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
+            className="relative w-full max-w-md surface-raised rounded-lg overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border/40">
-              <Search className="size-4 text-muted-foreground shrink-0" />
+            <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-border">
+              <Search className="size-3.5 text-muted-foreground shrink-0" />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Search pages..."
-                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+                className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/60"
                 onKeyDown={e => { if (e.key === 'Enter' && results.length > 0) go(results[0].href) }}
               />
-              <Kbd className="text-[10px] px-1.5 py-0.5">ESC</Kbd>
+              <Kbd className="text-[10px] px-1 py-0.5">ESC</Kbd>
             </div>
-            <div className="max-h-[50vh] overflow-y-auto scrollbar-premium p-2">
+            <div className="max-h-[50vh] overflow-y-auto scrollbar-thin p-1">
               {results.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No results found</p>
+                <p className="text-[13px] text-muted-foreground text-center py-6">No results found</p>
               ) : (
                 <div className="space-y-0.5">
                   {results.map(item => (
                     <button key={item.href} onClick={() => go(item.href)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/60 transition-colors text-left group"
+                      className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md hover:bg-accent transition-colors text-left group"
                     >
-                      <div className="size-8 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                        <item.icon className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                      </div>
-                      <span className="text-sm font-medium">{item.title}</span>
+                      <item.icon className="size-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      <span className="text-[13px] text-foreground">{item.title}</span>
                     </button>
                   ))}
                 </div>
@@ -263,23 +342,23 @@ function TopBar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { profile, signOut } = useAuth()
-  const { theme, setTheme } = useTheme()
+  const { toggleSidebar, open } = useSidebar()
   const [searchOpen, setSearchOpen] = useState(false)
 
   const pageTitles: Record<string, string> = {
     '/': 'Dashboard', '/partners': 'Partners', '/agreements': 'Agreements',
     '/opportunities': 'Opportunities', '/revenue': 'Revenue', '/tasks': 'Tasks',
-    '/documents': 'Documents', '/playbook': 'Partnership Playbook', '/reports': 'Reports',
+    '/documents': 'Documents', '/playbook': 'Playbook', '/reports': 'Reports',
     '/activities': 'Activity Log', '/notifications': 'Notifications', '/settings': 'Settings',
     '/users': 'User Management', '/profile': 'My Profile',
   }
   const currentTitle = Object.entries(pageTitles).find(([path]) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
-  )?.[1] ?? 'Linkit'
+  )?.[1] ?? 'LinkIt'
 
   async function handleSignOut() {
     await signOut()
-    toast.success('Signed out successfully')
+    toast.success('Signed out')
     navigate('/login')
   }
 
@@ -293,89 +372,79 @@ function TopBar() {
 
   return (
     <>
-      <header
-        className="h-14 flex items-center px-4 gap-3 sticky top-0 z-40 border-b border-sidebar-border/50"
-        style={{ background: 'var(--sidebar)' }}
-      >
-        <SidebarTrigger className="shrink-0 hover:bg-sidebar-accent/50 rounded-lg size-8" />
-        <Separator orientation="vertical" className="h-5 bg-sidebar-border/50" />
-
-        <motion.h1
-          key={currentTitle}
-          initial={{ opacity: 0, x: -6 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.2 }}
-          className="text-sm font-semibold hidden sm:block text-sidebar-foreground"
-          style={{ fontFamily: 'var(--font-display)' }}
+      <header className="h-12 flex items-center px-4 gap-3 sticky top-0 z-40 bg-background/90 backdrop-blur-sm border-b border-border/60">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 rounded-md shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+          onClick={toggleSidebar}
+          title={open ? 'Collapse sidebar' : 'Expand sidebar'}
         >
-          {currentTitle}
-        </motion.h1>
+          {open ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
+        </Button>
+        <AnimatePresence mode="wait">
+          <motion.h1
+            key={currentTitle}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
+            className="text-[13px] font-medium text-foreground hidden sm:block"
+          >
+            {currentTitle}
+          </motion.h1>
+        </AnimatePresence>
 
         <div className="flex-1" />
 
         <button
           onClick={() => setSearchOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sidebar-accent/30 hover:bg-sidebar-accent/50 transition-colors text-sidebar-foreground/50 border border-sidebar-border/40 cursor-pointer"
+          className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted/60 hover:bg-muted text-muted-foreground border border-border transition-colors cursor-pointer"
         >
           <Search className="size-3.5" />
           <span className="text-xs">Search...</span>
-          <Kbd className="text-[10px] px-1 py-0 ml-3">⌘K</Kbd>
+          <Kbd className="text-[10px] px-1 py-0 ml-2">⌘K</Kbd>
         </button>
 
         <div className="flex items-center gap-0.5">
-          <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div key={theme}
-                initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
-                animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.18 }}
-              >
-                {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-              </motion.div>
-            </AnimatePresence>
-          </Button>
+          <ThemeMenu />
 
-          <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground relative"
+          <Button variant="ghost" size="icon" className="size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent relative"
             onClick={() => navigate('/notifications')}
           >
-            <Bell className="size-4" />
-            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
+            <Bell className="size-3.5" />
+            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-8 pl-1 pr-2 rounded-lg hover:bg-sidebar-accent/50 text-sidebar-foreground">
-                <Avatar className="size-7 ring-2 ring-sidebar-border/40">
-                  <AvatarFallback className="text-xs btn-gradient text-white font-semibold">
+              <Button variant="ghost" className="flex items-center gap-2 h-7 pl-1 pr-1.5 rounded-md hover:bg-accent text-foreground">
+                <Avatar className="size-5">
+                  <AvatarFallback className="text-[10px] bg-primary text-primary-foreground font-medium">
                     {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium hidden sm:block max-w-[120px] truncate">
+                <span className="text-[13px] font-medium hidden sm:block max-w-[100px] truncate">
                   {profile?.full_name || 'User'}
                 </span>
-                <ChevronDown className="size-3 text-sidebar-foreground/40" />
+                <ChevronDown className="size-3 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-xl glass">
+            <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium leading-none">{profile?.full_name || 'User'}</p>
-                  <p className="text-xs leading-none text-muted-foreground capitalize">{profile?.role?.replace('_', ' ')}</p>
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-[13px] font-medium leading-none">{profile?.full_name || 'User'}</p>
+                  <p className="text-[11px] leading-none text-muted-foreground capitalize">{profile?.role?.replace('_', ' ')}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate('/profile')}>
-                <UserCog className="size-4" /> My Profile
+              <DropdownMenuItem className="rounded-md text-[13px] cursor-pointer" onClick={() => navigate('/profile')}>
+                <UserCog className="size-3.5" /> My Profile
               </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => navigate('/notifications')}>
-                <Bell className="size-4" /> Notifications
+              <DropdownMenuItem className="rounded-md text-[13px] cursor-pointer" onClick={() => navigate('/notifications')}>
+                <Bell className="size-3.5" /> Notifications
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" className="rounded-lg cursor-pointer" onClick={handleSignOut}>
-                <LogOut className="size-4" /> Sign out
+              <DropdownMenuItem variant="destructive" className="rounded-md text-[13px] cursor-pointer" onClick={handleSignOut}>
+                <LogOut className="size-3.5" /> Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -391,23 +460,25 @@ export default function AppLayout() {
   const location = useLocation()
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full gradient-mesh">
-        <AppSidebar />
-        <div className="flex flex-col flex-1 min-w-0">
-          <TopBar />
-          <main className="flex-1 p-5 sm:p-6 lg:p-8 overflow-auto scrollbar-premium">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
-          </main>
+      <div className="flex min-h-screen w-full bg-background p-2 sm:p-3">
+        <div className="flex min-h-screen w-full overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-[0_16px_45px_rgba(15,23,42,0.08)]">
+          <AppSidebar />
+          <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-background">
+            <TopBar />
+            <main className="flex-1 p-4 sm:p-5 lg:p-6 overflow-auto scrollbar-thin">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                >
+                  <div data-export-root className="min-h-full">
+                    <Outlet />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
         </div>
       </div>
     </SidebarProvider>

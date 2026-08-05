@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, FileText, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, Clock } from 'lucide-react'
+import { Plus, Search, FileText, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, Clock, Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Agreement } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -18,6 +18,7 @@ import {
   GlassCard, PageHeader, StatusBadge, FadeIn, EmptyState, PremiumSkeleton
 } from '@/components/shared/premium'
 import { Pagination, usePagination } from '@/components/shared/pagination'
+import { usePdfExport } from '@/hooks/usePdfExport'
 import { motion } from 'framer-motion'
 
 type AgreementWithPartner = Agreement & { partners: { partner_name: string } | null }
@@ -72,11 +73,26 @@ export default function AgreementsPage() {
     return isAfter(d, now) && isBefore(d, addDays(now, 30))
   })
   const { page, pageSize, total, paginated, onPageChange } = usePagination(filtered, 10)
+  const { exportToPdf, exporting } = usePdfExport()
+
+  async function handleExport() {
+    try {
+      await exportToPdf(`linkit-agreements-${new Date().toISOString().split('T')[0]}.pdf`)
+      toast.success('Agreements exported as PDF')
+    } catch {
+      toast.error('Failed to export PDF')
+    }
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader title="Agreements" description={`${filtered.length} agreements`}>
-        {canEdit && <Button asChild className="rounded-xl"><Link to="/agreements/new"><Plus className="size-4" />New Agreement</Link></Button>}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="rounded-xl" onClick={handleExport} disabled={exporting}>
+            <Download className="size-4" />{exporting ? 'Exporting...' : 'Export'}
+          </Button>
+          {canEdit && <Button asChild className="rounded-xl"><Link to="/agreements/new"><Plus className="size-4" />New Agreement</Link></Button>}
+        </div>
       </PageHeader>
 
       {expiringSoon.length > 0 && (

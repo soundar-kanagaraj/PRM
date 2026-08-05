@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, Target, TrendingUp, Trophy, Percent } from 'lucide-react'
+import { Plus, Search, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, Target, TrendingUp, Trophy, Percent, Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Opportunity } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -17,6 +17,7 @@ import { Progress } from '@/components/ui/progress'
 import { motion } from 'framer-motion'
 import { GlassCard, StatCard, PageHeader, StatusBadge, FadeIn, StaggerContainer, StaggerItem, EmptyState, PremiumSkeleton } from '@/components/shared/premium'
 import { Pagination, usePagination } from '@/components/shared/pagination'
+import { usePdfExport } from '@/hooks/usePdfExport'
 
 type OppWithPartner = Opportunity & { partners: { partner_name: string } | null }
 
@@ -68,11 +69,26 @@ export default function OpportunitiesPage() {
   const wonValue = opps.filter(o => o.stage === 'won').reduce((s, o) => s + o.estimated_revenue, 0)
   const winRate = opps.length > 0 ? Math.round((opps.filter(o => o.stage === 'won').length / opps.filter(o => ['won', 'lost'].includes(o.stage)).length) * 100) || 0 : 0
   const { page, pageSize, total, paginated, onPageChange } = usePagination(filtered, 10)
+  const { exportToPdf, exporting } = usePdfExport()
+
+  async function handleExport() {
+    try {
+      await exportToPdf(`linkit-opportunities-${new Date().toISOString().split('T')[0]}.pdf`)
+      toast.success('Opportunities exported as PDF')
+    } catch {
+      toast.error('Failed to export PDF')
+    }
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader title="Opportunities" description={`${filtered.length} opportunities`}>
-        {canEdit && <Button asChild className="rounded-xl"><Link to="/opportunities/new"><Plus className="size-4" />New Opportunity</Link></Button>}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="rounded-xl" onClick={handleExport} disabled={exporting}>
+            <Download className="size-4" />{exporting ? 'Exporting...' : 'Export'}
+          </Button>
+          {canEdit && <Button asChild className="rounded-xl"><Link to="/opportunities/new"><Plus className="size-4" />New Opportunity</Link></Button>}
+        </div>
       </PageHeader>
 
       <StaggerContainer className="grid grid-cols-1 sm:grid-cols-3 gap-4">
