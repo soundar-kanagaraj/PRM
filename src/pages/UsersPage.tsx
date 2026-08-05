@@ -43,25 +43,35 @@ export default function UsersPage() {
   async function handleInvite() {
     if (!inviteForm.email || !inviteForm.password || !inviteForm.full_name) return
     setSaving(true)
-    const { data: authData, error } = await supabase.auth.admin?.createUser({
-      email: inviteForm.email,
-      password: inviteForm.password,
-      user_metadata: { full_name: inviteForm.full_name, role: inviteForm.role },
-      email_confirm: true,
-    })
-    if (error || !authData?.user) {
-      // Fallback: signup
-      const { error: signupError } = await supabase.auth.signUp({
-        email: inviteForm.email,
-        password: inviteForm.password,
-        options: { data: { full_name: inviteForm.full_name, role: inviteForm.role } }
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-create-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.session?.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          email: inviteForm.email,
+          password: inviteForm.password,
+          full_name: inviteForm.full_name,
+          role: inviteForm.role,
+        }),
       })
-      if (signupError) { toast.error('Failed to create user: ' + signupError.message); setSaving(false); return }
+      const result = await res.json()
+      if (!res.ok || result.error) {
+        toast.error('Failed to create user: ' + (result.error || res.statusText))
+        setSaving(false)
+        return
+      }
+      toast.success('User created successfully')
+      setInviteOpen(false)
+      fetchProfiles()
+    } catch {
+      toast.error('Failed to create user')
     }
     setSaving(false)
-    toast.success('User created successfully')
-    setInviteOpen(false)
-    setTimeout(fetchProfiles, 1000)
   }
 
   async function handleUpdateRole() {

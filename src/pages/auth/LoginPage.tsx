@@ -37,16 +37,25 @@ export default function LoginPage() {
 
   async function onSignup(data: SignupForm) {
     setSignupLoading(true)
-    const { data: signupData, error } = await supabase.auth.signUp({
-      email: data.email, password: data.password,
-      options: { data: { full_name: data.full_name, role: 'super_admin' } }
-    })
-    if (error) { toast.error(error.message); setSignupLoading(false); return }
-    if (signupData?.session) { toast.success('Account created!'); setSignupLoading(false); return }
-    const { error: signInError } = await signIn(data.email, data.password)
-    setSignupLoading(false)
-    if (signInError) toast.success('Account created! Please sign in.')
-    else toast.success('Account created and signed in!')
+    try {
+      // Check if this is the first user (no profiles exist yet)
+      const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
+      const isFirstUser = count === 0
+
+      const { data: signupData, error } = await supabase.auth.signUp({
+        email: data.email, password: data.password,
+        options: { data: { full_name: data.full_name, role: isFirstUser ? 'super_admin' : 'viewer' } }
+      })
+      if (error) { toast.error(error.message); setSignupLoading(false); return }
+      if (signupData?.session) { toast.success('Account created!'); setSignupLoading(false); return }
+      const { error: signInError } = await signIn(data.email, data.password)
+      setSignupLoading(false)
+      if (signInError) toast.success('Account created! Please sign in.')
+      else toast.success('Account created and signed in!')
+    } catch {
+      toast.error('Failed to create account')
+      setSignupLoading(false)
+    }
   }
 
   return (
