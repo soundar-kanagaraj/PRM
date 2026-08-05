@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import {
-  ArrowLeft, Edit, Building2, Mail, Phone, Globe, MapPin,
-  FileText, TrendingUp, DollarSign, Plus
-} from 'lucide-react'
+import { ArrowLeft, CreditCard as Edit, Building2, Mail, Phone, Globe, MapPin, FileText, TrendingUp, DollarSign, Plus, ExternalLink } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
-import type { Partner, Agreement, Opportunity, RevenueRecord, Activity } from '@/lib/supabase'
+import type { Partner, Agreement, Opportunity, RevenueRecord, Activity, Document } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -50,18 +47,20 @@ export default function PartnerDetailPage() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([])
   const [revenues, setRevenues] = useState<RevenueRecord[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
+  const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => { if (id) fetchAll() }, [id])
 
   async function fetchAll() {
     setLoading(true)
-    const [pRes, aRes, oRes, rRes, acRes] = await Promise.all([
+    const [pRes, aRes, oRes, rRes, acRes, dRes] = await Promise.all([
       supabase.from('partners').select('*').eq('id', id!).maybeSingle(),
       supabase.from('agreements').select('*').eq('partner_id', id!).order('created_at', { ascending: false }),
       supabase.from('opportunities').select('*').eq('partner_id', id!).order('created_at', { ascending: false }),
       supabase.from('revenue_records').select('*').eq('partner_id', id!).order('created_at', { ascending: false }),
       supabase.from('activities').select('*').eq('partner_id', id!).order('created_at', { ascending: false }).limit(20),
+      supabase.from('documents').select('*').eq('partner_id', id!).order('created_at', { ascending: false }),
     ])
     setLoading(false)
     if (!pRes.data) { toast.error('Partner not found'); navigate('/partners'); return }
@@ -70,6 +69,7 @@ export default function PartnerDetailPage() {
     setOpportunities((oRes.data ?? []) as Opportunity[])
     setRevenues((rRes.data ?? []) as RevenueRecord[])
     setActivities((acRes.data ?? []) as Activity[])
+    setDocuments((dRes.data ?? []) as Document[])
   }
 
   if (loading) return (
@@ -127,6 +127,7 @@ export default function PartnerDetailPage() {
           <TabsTrigger value="agreements">Agreements ({agreements.length})</TabsTrigger>
           <TabsTrigger value="opportunities">Opportunities ({opportunities.length})</TabsTrigger>
           <TabsTrigger value="revenue">Revenue ({revenues.length})</TabsTrigger>
+          <TabsTrigger value="documents">Documents ({documents.length})</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
@@ -257,6 +258,39 @@ export default function PartnerDetailPage() {
                       <p className="font-bold tabular-nums">{r.currency} {r.amount.toLocaleString()}</p>
                       <StatusBadge status={r.payment_status} variant={STATUS_VARIANTS[r.payment_status] ?? 'inactive'} />
                     </div>
+                  </CardContent>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="documents" className="mt-4">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-sm text-muted-foreground">{documents.length} document(s)</p>
+            {canEdit && <Button size="sm" className="rounded-xl" asChild><Link to="/documents"><Plus className="size-3" />Add Document</Link></Button>}
+          </div>
+          <div className="space-y-3">
+            {documents.length === 0 ? (
+              <GlassCard className="p-6"><EmptyState icon={FileText} title="No documents yet" description="Documents will appear here once uploaded." /></GlassCard>
+            ) : documents.map((d, i) => (
+              <motion.div key={d.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.04 }}>
+                <GlassCard className="p-5">
+                  <CardContent className="p-0 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <FileText className="size-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{d.name}</p>
+                        <p className="text-xs text-muted-foreground">{d.doc_type ?? 'Document'} {d.category ? `• ${d.category}` : ''}</p>
+                      </div>
+                    </div>
+                    {d.file_url && (
+                      <Button variant="ghost" size="icon" className="size-7 rounded-lg" asChild>
+                        <a href={d.file_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="size-3.5" /></a>
+                      </Button>
+                    )}
                   </CardContent>
                 </GlassCard>
               </motion.div>

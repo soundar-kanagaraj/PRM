@@ -4,6 +4,7 @@ import { Plus, Search, DollarSign, MoveHorizontal as MoreHorizontal, CreditCard 
 import { supabase } from '@/lib/supabase'
 import type { RevenueRecord } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { logActivity } from '@/lib/activity'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,7 +31,7 @@ const PAYMENT_VARIANT: Record<string, 'active' | 'inactive' | 'pending' | 'warni
 
 export default function RevenuePage() {
   const navigate = useNavigate()
-  const { canEdit, isAdmin } = useAuth()
+  const { canEdit, isAdmin, user } = useAuth()
   const [records, setRecords] = useState<RevWithPartner[]>([])
   const [filtered, setFiltered] = useState<RevWithPartner[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,10 +59,14 @@ export default function RevenuePage() {
 
   async function handleDelete() {
     if (!deleteId) return
+    const rec = records.find(r => r.id === deleteId)
     const { error } = await supabase.from('revenue_records').delete().eq('id', deleteId)
     setDeleteId(null)
     if (error) toast.error('Failed to delete')
-    else { toast.success('Record deleted'); fetchRecords() }
+    else {
+      if (rec) await logActivity({ user, entityType: 'revenue', entityId: deleteId, action: 'delete', description: `Deleted revenue record (${rec.currency} ${rec.amount})`, partnerId: rec.partner_id })
+      toast.success('Record deleted'); fetchRecords()
+    }
   }
 
   const totalRevenue = records.reduce((s, r) => s + r.amount, 0)

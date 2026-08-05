@@ -3,11 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowLeft, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, Save, Loader as Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import type { Setting } from '@/lib/supabase'
+import type { Setting, Partner } from '@/lib/supabase'
+import { sanitizeForForm, emptyToNull } from '@/lib/form-utils'
+import { useAuth } from '@/contexts/AuthContext'
+import { logActivity, notifyManagers } from '@/lib/activity'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -51,6 +54,7 @@ type FormData = z.infer<typeof schema>
 export default function PartnerFormPage() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const { user } = useAuth()
   const isEdit = !!id
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(isEdit)
@@ -83,23 +87,29 @@ export default function PartnerFormPage() {
     const { data, error } = await supabase.from('partners').select('*').eq('id', id!).maybeSingle()
     setFetching(false)
     if (error || !data) { toast.error('Partner not found'); navigate('/partners'); return }
-    reset(data)
+    reset(sanitizeForForm(data as Record<string, unknown>) as FormData)
   }
 
   async function onSubmit(data: FormData) {
     setLoading(true)
-    const payload = { ...data }
-    Object.keys(payload).forEach(k => {
-      const key = k as keyof typeof payload
-      if (payload[key] === '' || payload[key] === undefined) (payload as Record<string, unknown>)[k] = null
-    })
-
-    const { error } = isEdit
-      ? await supabase.from('partners').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', id!)
-      : await supabase.from('partners').insert(payload)
-
+    const payload = emptyToNull(data as Record<string, unknown>)
+    let result
+    if (isEdit) {
+      const { data: oldRow } = await supabase.from('partners').select('*').eq('id', id!).maybeSingle()
+      result = await supabase.from('partners').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', id!).select().single()
+      if (!result.error && result.data) {
+        await logActivity({ user, entityType: 'partner', entityId: id!, action: 'update', description: `Updated partner "${result.data.partner_name}"`, partnerId: id!, oldValue: oldRow as Record<string, unknown>, newValue: result.data as Record<string, unknown> })
+      }
+    } else {
+      result = await supabase.from('partners').insert(payload).select().single()
+      if (!result.error && result.data) {
+        const p = result.data as Partner
+        await logActivity({ user, entityType: 'partner', entityId: p.id, action: 'create', description: `Created partner "${p.partner_name}"`, partnerId: p.id, newValue: p as Record<string, unknown> })
+        await notifyManagers({ title: 'New partner added', message: `"${p.partner_name}" was added to the partner directory.`, type: 'info', link: `/partners/${p.id}`, partnerId: p.id })
+      }
+    }
     setLoading(false)
-    if (error) { toast.error(`Failed to ${isEdit ? 'update' : 'create'} partner: ${error.message}`); return }
+    if (result.error) { toast.error(`Failed to ${isEdit ? 'update' : 'create'} partner: ${result.error.message}`); return }
     toast.success(`Partner ${isEdit ? 'updated' : 'created'} successfully`)
     navigate('/partners')
   }

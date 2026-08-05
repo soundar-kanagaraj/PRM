@@ -5,6 +5,7 @@ import { Plus, Search, Building2, MoveHorizontal as MoreHorizontal, CreditCard a
 import { supabase } from '@/lib/supabase'
 import type { Partner } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { logActivity } from '@/lib/activity'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -28,7 +29,7 @@ const TIER_STYLES: Record<string, string> = {
 
 export default function PartnersPage() {
   const navigate = useNavigate()
-  const { canEdit, isAdmin } = useAuth()
+  const { canEdit, isAdmin, user } = useAuth()
   const [partners, setPartners] = useState<Partner[]>([])
   const [filtered, setFiltered] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,10 +59,14 @@ export default function PartnersPage() {
   async function handleDelete() {
     if (!deleteId) return
     setDeleting(true)
+    const partner = partners.find(p => p.id === deleteId)
     const { error } = await supabase.from('partners').delete().eq('id', deleteId)
     setDeleting(false); setDeleteId(null)
     if (error) toast.error('Failed to delete')
-    else { toast.success('Partner deleted'); fetchPartners() }
+    else {
+      if (partner) await logActivity({ user, entityType: 'partner', entityId: deleteId, action: 'delete', description: `Deleted partner "${partner.partner_name}"` })
+      toast.success('Partner deleted'); fetchPartners()
+    }
   }
 
   const partnerTypes = [...new Set(partners.map(p => p.partner_type).filter(Boolean))] as string[]

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { BookOpen, Search, Plus, Edit, Trash2 } from 'lucide-react'
+import { BookOpen, Search, Plus, CreditCard as Edit, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { logActivity } from '@/lib/activity'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,7 +21,7 @@ const CATEGORIES = ['Onboarding Guide', 'Sales Process', 'Technical Enablement',
 type Entry = { id: string; title: string; content: string | null; category: string | null; tags: string[] | null; is_published: boolean; created_at: string }
 
 export default function PlaybookPage() {
-  const { canEdit } = useAuth()
+  const { canEdit, user } = useAuth()
   const [entries, setEntries] = useState<Entry[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -47,11 +48,16 @@ export default function PlaybookPage() {
   async function handleSave() {
     if (!form.title) return
     setSaving(true)
-    const { error } = editEntry
-      ? await supabase.from('playbook_entries').update({ ...form, updated_at: new Date().toISOString() }).eq('id', editEntry.id)
-      : await supabase.from('playbook_entries').insert(form)
+    let result
+    if (editEntry) {
+      result = await supabase.from('playbook_entries').update({ ...form, updated_at: new Date().toISOString() }).eq('id', editEntry.id)
+      if (!result.error) await logActivity({ user, entityType: 'playbook', entityId: editEntry.id, action: 'update', description: `Updated playbook entry "${form.title}"` })
+    } else {
+      result = await supabase.from('playbook_entries').insert(form).select().single()
+      if (!result.error && result.data) await logActivity({ user, entityType: 'playbook', entityId: result.data.id, action: 'create', description: `Created playbook entry "${form.title}"` })
+    }
     setSaving(false)
-    if (error) { toast.error('Failed to save'); return }
+    if (result.error) { toast.error('Failed to save'); return }
     toast.success('Saved')
     setDialogOpen(false)
     fetchEntries()
@@ -59,7 +65,9 @@ export default function PlaybookPage() {
 
   async function handleDelete() {
     if (!deleteId) return
+    const entry = entries.find(e => e.id === deleteId)
     await supabase.from('playbook_entries').delete().eq('id', deleteId)
+    if (entry) await logActivity({ user, entityType: 'playbook', entityId: deleteId, action: 'delete', description: `Deleted playbook entry "${entry.title}"` })
     setDeleteId(null)
     toast.success('Deleted')
     fetchEntries()

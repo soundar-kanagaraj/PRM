@@ -8,6 +8,7 @@ import {
   Moon, Sun, Search, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/components/theme-provider'
 import { useThemeColor, themeColors, type ThemeColor } from '@/contexts/ThemeContext'
 import { toast } from 'sonner'
@@ -341,9 +342,10 @@ function SearchPalette({ open, onClose }: { open: boolean; onClose: () => void }
 function TopBar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, user } = useAuth()
   const { toggleSidebar, open } = useSidebar()
   const [searchOpen, setSearchOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const pageTitles: Record<string, string> = {
     '/': 'Dashboard', '/partners': 'Partners', '/agreements': 'Agreements',
@@ -369,6 +371,20 @@ function TopBar() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    const userId = user.id
+    async function fetchCount() {
+      const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_read', false)
+      setUnreadCount(count ?? 0)
+    }
+    fetchCount()
+    const channel = supabase.channel('notifications-topbar')
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, fetchCount)
+    channel.subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [user])
 
   return (
     <>
@@ -411,7 +427,11 @@ function TopBar() {
             onClick={() => navigate('/notifications')}
           >
             <Bell className="size-3.5" />
-            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 px-1 rounded-full bg-destructive text-white text-[9px] font-bold flex items-center justify-center tabular-nums">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Button>
 
           <DropdownMenu>
@@ -460,8 +480,8 @@ export default function AppLayout() {
   const location = useLocation()
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-background p-2 sm:p-3">
-        <div className="flex min-h-screen w-full overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-[0_16px_45px_rgba(15,23,42,0.08)]">
+      <div className="flex min-h-screen w-full bg-background">
+        <div className="flex min-h-screen w-full overflow-hidden">
           <AppSidebar />
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-background">
             <TopBar />

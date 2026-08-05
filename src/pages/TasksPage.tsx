@@ -7,6 +7,8 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { Task, Partner } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { sanitizeForForm } from '@/lib/form-utils'
+import { logActivity } from '@/lib/activity'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -40,7 +42,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 }
 
 export default function TasksPage() {
-  useAuth()
+  const { user } = useAuth()
   const [tasks, setTasks] = useState<TaskWithPartner[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,16 +72,25 @@ export default function TasksPage() {
   }
 
   function openCreate() { setEditTask(null); reset({ priority: 'medium', status: 'pending' }); setDialogOpen(true) }
-  function openEdit(t: TaskWithPartner) { setEditTask(t); reset({ ...t, due_date: t.due_date?.slice(0, 16) ?? '', partner_id: t.partner_id ?? '' } as any); setDialogOpen(true) }
+  function openEdit(t: TaskWithPartner) {
+    setEditTask(t)
+    reset(sanitizeForForm({ ...t, due_date: t.due_date?.slice(0, 16) ?? undefined } as Record<string, unknown>) as FormData)
+    setDialogOpen(true)
+  }
 
   async function onSubmit(data: FormData) {
     setSaving(true)
     const payload = { ...data, partner_id: data.partner_id || null, due_date: data.due_date || null }
-    const { error } = editTask
-      ? await supabase.from('tasks').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editTask.id)
-      : await supabase.from('tasks').insert(payload)
+    let result
+    if (editTask) {
+      result = await supabase.from('tasks').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editTask.id)
+      if (!result.error) await logActivity({ user, entityType: 'task', entityId: editTask.id, action: 'update', description: `Updated task "${data.title}"`, partnerId: data.partner_id || null })
+    } else {
+      result = await supabase.from('tasks').insert(payload).select().single()
+      if (!result.error && result.data) await logActivity({ user, entityType: 'task', entityId: result.data.id, action: 'create', description: `Created task "${data.title}"`, partnerId: data.partner_id || null })
+    }
     setSaving(false)
-    if (error) { toast.error('Failed to save task'); return }
+    if (result.error) { toast.error('Failed to save task'); return }
     toast.success(editTask ? 'Task updated' : 'Task created')
     setDialogOpen(false)
     fetchTasks()
@@ -93,7 +104,9 @@ export default function TasksPage() {
 
   async function handleDelete() {
     if (!deleteId) return
+    const task = tasks.find(t => t.id === deleteId)
     await supabase.from('tasks').delete().eq('id', deleteId)
+    if (task) await logActivity({ user, entityType: 'task', entityId: deleteId, action: 'delete', description: `Deleted task "${task.title}"`, partnerId: task.partner_id })
     setDeleteId(null)
     toast.success('Task deleted')
     fetchTasks()

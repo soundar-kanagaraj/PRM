@@ -3,10 +3,13 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowLeft, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, Save, Loader as Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import type { Partner, Setting } from '@/lib/supabase'
+import type { Partner, Setting, Opportunity } from '@/lib/supabase'
+import { sanitizeForForm, emptyToNull } from '@/lib/form-utils'
+import { useAuth } from '@/contexts/AuthContext'
+import { logActivity, notifyManagers } from '@/lib/activity'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,6 +45,7 @@ export default function OpportunityFormPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const [searchParams] = useSearchParams()
+  const { user } = useAuth()
   const isEdit = !!id
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(isEdit)
@@ -81,18 +85,30 @@ export default function OpportunityFormPage() {
     const { data, error } = await supabase.from('opportunities').select('*').eq('id', id!).maybeSingle()
     setFetching(false)
     if (error || !data) { toast.error('Opportunity not found'); navigate('/opportunities'); return }
-    reset({ ...data, expected_close_date: data.expected_close_date ?? '' })
+    reset(sanitizeForForm(data as Record<string, unknown>) as FormData)
   }
 
   async function onSubmit(data: FormData) {
     setLoading(true)
-    const payload = { ...data }
-    Object.keys(payload).forEach(k => { if ((payload as Record<string, unknown>)[k] === '') (payload as Record<string, unknown>)[k] = null })
-    const { error } = isEdit
-      ? await supabase.from('opportunities').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', id!)
-      : await supabase.from('opportunities').insert(payload)
+    const payload = emptyToNull(data as Record<string, unknown>)
+    let result
+    if (isEdit) {
+      const { data: oldRow } = await supabase.from('opportunities').select('*').eq('id', id!).maybeSingle()
+      result = await supabase.from('opportunities').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', id!).select().single()
+      if (!result.error && result.data) {
+        await logActivity({ user, entityType: 'opportunity', entityId: id!, action: 'update', description: `Updated opportunity "${result.data.opportunity_name}"`, partnerId: data.partner_id, oldValue: oldRow as Record<string, unknown>, newValue: result.data as Record<string, unknown> })
+        if (data.stage === 'won') await notifyManagers({ title: 'Deal won!', message: `Opportunity "${result.data.opportunity_name}" was marked as won.`, type: 'success', link: '/opportunities', partnerId: data.partner_id })
+      }
+    } else {
+      result = await supabase.from('opportunities').insert(payload).select().single()
+      if (!result.error && result.data) {
+        const o = result.data as Opportunity
+        await logActivity({ user, entityType: 'opportunity', entityId: o.id, action: 'create', description: `Created opportunity "${o.opportunity_name}"`, partnerId: o.partner_id, newValue: o as Record<string, unknown> })
+        await notifyManagers({ title: 'New opportunity created', message: `"${o.opportunity_name}" was added to the pipeline.`, type: 'info', link: '/opportunities', partnerId: o.partner_id })
+      }
+    }
     setLoading(false)
-    if (error) { toast.error(`Failed: ${error.message}`); return }
+    if (result.error) { toast.error(`Failed: ${result.error.message}`); return }
     toast.success(`Opportunity ${isEdit ? 'updated' : 'created'}`)
     navigate('/opportunities')
   }

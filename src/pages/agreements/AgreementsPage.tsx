@@ -4,6 +4,7 @@ import { Plus, Search, FileText, MoveHorizontal as MoreHorizontal, CreditCard as
 import { supabase } from '@/lib/supabase'
 import type { Agreement } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { logActivity } from '@/lib/activity'
 import { toast } from 'sonner'
 import { format, isAfter, addDays, isBefore } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -33,7 +34,7 @@ const STATUS_VARIANTS: Record<string, 'active' | 'inactive' | 'pending' | 'warni
 
 export default function AgreementsPage() {
   const navigate = useNavigate()
-  const { canEdit, isAdmin } = useAuth()
+  const { canEdit, isAdmin, user } = useAuth()
   const [agreements, setAgreements] = useState<AgreementWithPartner[]>([])
   const [filtered, setFiltered] = useState<AgreementWithPartner[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,10 +61,14 @@ export default function AgreementsPage() {
 
   async function handleDelete() {
     if (!deleteId) return
+    const ag = agreements.find(a => a.id === deleteId)
     const { error } = await supabase.from('agreements').delete().eq('id', deleteId)
     setDeleteId(null)
     if (error) toast.error('Failed to delete')
-    else { toast.success('Agreement deleted'); fetchAgreements() }
+    else {
+      if (ag) await logActivity({ user, entityType: 'agreement', entityId: deleteId, action: 'delete', description: `Deleted agreement "${ag.agreement_name}"`, partnerId: ag.partner_id })
+      toast.success('Agreement deleted'); fetchAgreements()
+    }
   }
 
   const now = new Date()

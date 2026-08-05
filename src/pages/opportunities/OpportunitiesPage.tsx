@@ -4,6 +4,7 @@ import { Plus, Search, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Tra
 import { supabase } from '@/lib/supabase'
 import type { Opportunity } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { logActivity } from '@/lib/activity'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -33,7 +34,7 @@ const STAGE_VARIANT: Record<string, 'info' | 'active' | 'pending' | 'warning' | 
 
 export default function OpportunitiesPage() {
   const navigate = useNavigate()
-  const { canEdit, isAdmin } = useAuth()
+  const { canEdit, isAdmin, user } = useAuth()
   const [opps, setOpps] = useState<OppWithPartner[]>([])
   const [filtered, setFiltered] = useState<OppWithPartner[]>([])
   const [loading, setLoading] = useState(true)
@@ -59,10 +60,14 @@ export default function OpportunitiesPage() {
 
   async function handleDelete() {
     if (!deleteId) return
+    const opp = opps.find(o => o.id === deleteId)
     const { error } = await supabase.from('opportunities').delete().eq('id', deleteId)
     setDeleteId(null)
     if (error) toast.error('Failed to delete')
-    else { toast.success('Opportunity deleted'); fetchOpps() }
+    else {
+      if (opp) await logActivity({ user, entityType: 'opportunity', entityId: deleteId, action: 'delete', description: `Deleted opportunity "${opp.opportunity_name}"`, partnerId: opp.partner_id })
+      toast.success('Opportunity deleted'); fetchOpps()
+    }
   }
 
   const pipelineValue = opps.filter(o => !['won', 'lost', 'closed'].includes(o.stage)).reduce((s, o) => s + o.estimated_revenue, 0)

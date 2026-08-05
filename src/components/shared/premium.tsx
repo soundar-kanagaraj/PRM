@@ -46,10 +46,11 @@ export function Sparkline({ data, color = 'var(--primary)' }: { data: number[]; 
 }
 
 /* ── GlassCard → Surface (clean card) ── */
-export function GlassCard({ children, className, accent = false, ...props }: {
+export function GlassCard({ children, className, accent = false, hover, ...props }: {
   children: React.ReactNode
   className?: string
   accent?: boolean
+  hover?: boolean
   [key: string]: unknown
 }) {
   return (
