@@ -388,22 +388,22 @@ function TopBar() {
 
   return (
     <>
-      <header className="h-12 flex items-center px-4 gap-3 sticky top-0 z-40 bg-background/90 backdrop-blur-sm border-b border-border/60">
+      <header className="h-14 sm:h-16 flex items-center px-4 sm:px-5 gap-3 sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/70 shadow-[0_1px_0_rgba(255,255,255,0.04)]">
         <Button
           variant="ghost"
           size="icon"
-          className="size-7 rounded-md shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="size-9 rounded-lg shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
           onClick={toggleSidebar}
           title={open ? 'Collapse sidebar' : 'Expand sidebar'}
         >
-          {open ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
+          {open ? <PanelLeftClose className="size-4.5" /> : <PanelLeftOpen className="size-4.5" />}
         </Button>
         <AnimatePresence mode="wait">
           <motion.h1
             key={currentTitle}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.12 }}
-            className="text-[13px] font-medium text-foreground hidden sm:block"
+            className="text-sm font-semibold text-foreground hidden sm:block"
           >
             {currentTitle}
           </motion.h1>
@@ -413,20 +413,20 @@ function TopBar() {
 
         <button
           onClick={() => setSearchOpen(true)}
-          className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted/60 hover:bg-muted text-muted-foreground border border-border transition-colors cursor-pointer"
+          className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground border border-border/70 transition-colors cursor-pointer"
         >
           <Search className="size-3.5" />
-          <span className="text-xs">Search...</span>
+          <span className="text-sm">Search...</span>
           <Kbd className="text-[10px] px-1 py-0 ml-2">⌘K</Kbd>
         </button>
 
         <div className="flex items-center gap-0.5">
           <ThemeMenu />
 
-          <Button variant="ghost" size="icon" className="size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent relative"
+          <Button variant="ghost" size="icon" className="size-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent relative"
             onClick={() => navigate('/notifications')}
           >
-            <Bell className="size-3.5" />
+            <Bell className="size-4" />
             {unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 px-1 rounded-full bg-destructive text-white text-[9px] font-bold flex items-center justify-center tabular-nums">
                 {unreadCount > 99 ? '99+' : unreadCount}
@@ -436,13 +436,13 @@ function TopBar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-7 pl-1 pr-1.5 rounded-md hover:bg-accent text-foreground">
-                <Avatar className="size-5">
+              <Button variant="ghost" className="flex items-center gap-2 h-9 pl-1.5 pr-2 rounded-lg hover:bg-accent text-foreground">
+                <Avatar className="size-6">
                   <AvatarFallback className="text-[10px] bg-primary text-primary-foreground font-medium">
                     {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-[13px] font-medium hidden sm:block max-w-[100px] truncate">
+                <span className="text-sm font-medium hidden sm:block max-w-[110px] truncate">
                   {profile?.full_name || 'User'}
                 </span>
                 <ChevronDown className="size-3 text-muted-foreground" />
